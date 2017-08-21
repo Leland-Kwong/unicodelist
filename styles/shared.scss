@@ -1,0 +1,59 @@
+$baseBackgroundColor: #f9f9f9;
+$colorSecondary: #307bce;
+$baseFontColor: #424141;
+$colorWarning: rgb(219, 5, 16);
+$headingFontColor: darken($baseFontColor, 20%);
+$medWidth: 60rem;
+$maxWidth: 45rem;
+$mainContentPaddingSmall: 1.4rem;
+$mainContentPaddingLarge: 2.5rem;
+
+@mixin fullContainerSidePadding() {
+  padding-left: $mainContentPaddingLarge;
+  padding-right: $mainContentPaddingLarge;
+
+  @media all and (max-width: $maxWidth) {
+    padding-left: $mainContentPaddingSmall;
+    padding-right: $mainContentPaddingSmall;
+  }
+}
+
+@mixin fullContainerWidth() {
+  width: calc(100% + (2 * #{$mainContentPaddingLarge}));
+  margin-left: -$mainContentPaddingLarge;
+
+  @media all and (max-width: $maxWidth) {
+    width: calc(100% + (2 * #{$mainContentPaddingSmall}));
+    margin-left: -$mainContentPaddingSmall;
+  }
+}
+
+.full-container-width {
+  @include fullContainerWidth();
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.list-reset {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.block {
+  margin-bottom: 1rem;
+}
+
+.color-sub-text {
+  color: lighten($baseFontColor, 20%);
+}
+
+.text-warning {
+  color: $colorWarning;
+}
+
+.text-align-right {
+  text-align: right;
+}

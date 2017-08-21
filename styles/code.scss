@@ -1,0 +1,47 @@
+code {
+  padding: .25em .5em;
+  background: #f5f5f5;
+}
+
+$padding: 1.4rem;
+pre,
+pre[class*="language-"] {
+  position: relative;
+  font-size: .92rem;
+  padding: 0 !important;
+  border-radius: 0;
+  @include fullContainerWidth();
+  border: 1px solid #eee;
+  border-left: 0;
+  border-right: 0;
+  overflow: visible;
+
+  &:before {
+    @extend .bodyFont;
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: .4em .9em .3em;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    // color: #fff;
+    background: #e0e0e0;
+    display: inline-block;
+    font-size: .7em;
+    float: right;
+  }
+
+  code {
+    padding: $padding !important;
+    margin: 0;
+    background: none;
+    overflow: auto;
+    display: block;
+  }
+}
+
+[data-lang] {
+  &:before {
+    content: attr(data-lang);
+  }
+}

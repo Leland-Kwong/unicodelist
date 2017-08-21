@@ -1,0 +1,460 @@
+@import "shared";
+@import "LoadingIndicator";
+@import "../node_modules/tachyons/src/_text-align";
+@import "../node_modules/tachyons/src/_display";
+@import "../node_modules/tachyons/src/_white-space";
+@import "../node_modules/tachyons/src/_overflow";
+@import "../node_modules/tachyons/src/_type-scale";
+@import "../node_modules/tachyons/src/_spacing";
+@import "./node_modules/tachyons/src/_skins";
+@import "./node_modules/tachyons/src/_colors";
+
+$colorPrimary: #4CAF50;
+$AppHeaderHeight: 4.5rem;
+$mainBg: #fffffc;
+$itemWidth: 6rem;
+
+h1 {
+  font-size: 1.5rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: monospace;
+  font-weight: normal;
+}
+
+a,
+button {
+  font-weight: normal;
+  color: $colorPrimary;
+  outline: 0;
+}
+
+a {
+  border: 1px dashed transparent;
+  text-decoration: none;
+}
+
+a:focus {
+  border-color: #000;
+}
+
+main {
+  padding-top: calc(#{$AppHeaderHeight} + 1rem);
+  display: flex;
+  flex-direction: column;
+  background: $mainBg;
+
+  a:hover {
+    color: #fff;
+    background: $colorSecondary;
+  }
+}
+
+[data-tooltip] {
+  position: relative;
+
+  &:hover:before {
+    @keyframes showTooltip {
+      0% {
+        opacity: 0
+      }
+
+      80% {
+        opacity: 0;
+      }
+    }
+
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    background: #555;
+    color: #fff;
+    padding: .3rem .6rem;
+    white-space: nowrap;
+    animation: showTooltip .7s ease-in;
+    font-size: .8rem;
+    font-weight: bold;
+  }
+
+  &:focus:before {
+    display: none;
+  }
+}
+
+.Matches {
+  display: flex;
+  flex-wrap: wrap;
+  flex-grow: 1;
+}
+
+.MatchesMain {
+  position: relative;
+  min-height: 10rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.Matches__Measure {
+  flex: 1 1 $itemWidth;
+  // background: purple;
+  // position: relative;
+  // &:before {
+  //   content: "";
+  //   height: 4px;
+  //   border-right: 1px solid #fff;
+  //   display: block;
+  // }
+}
+
+.Matches__Measure,
+.Match {
+  min-width: 0;
+  margin: 1rem 0 3rem 1rem;
+}
+
+$matchTopPadding: .5rem;
+.Match {
+  position: relative;
+  border-top: 1px solid #cecece;
+}
+
+.Match__Char {
+  font-size: 3rem;
+  color: #000;
+  display: block;
+  position: relative;
+  text-align: center;
+  font-weight: bold;
+  height: 8rem;
+  padding-top: 1.5rem;
+}
+
+.Match__Header {
+  padding-top: $matchTopPadding;
+}
+
+.Match__MetadataField {
+  font-size: 14px;
+  display: flex;
+  align-items: baseline;
+  line-height: 1.4;
+}
+
+.Match__MetadataValue {
+  font-weight: normal;
+  flex: 1 1 auto;
+
+  &:not(:hover) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.Match__MetadataKey {
+  font-size: .8em;
+  width: 3em;
+  margin-right: .3em;
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: .03rem;
+  flex-shrink: 0;
+  color: rgb(79, 79, 79);
+}
+
+.Match__Desc {
+  font-size: 12px;
+  height: 3rem;
+  // margin-bottom: 1rem;
+  // margin-right: 2.2rem;
+  line-height: 1.4;
+  color: #000;
+}
+
+.Matches__Measure {
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.ExampleQuery {
+  display: inline-block;
+
+  &:not(:last-child):after {
+    content: "/";
+    margin: 0 .5rem;
+    opacity: .3;
+  }
+}
+
+.Copyable {
+  position: relative;
+
+  // &:hover {
+  //   z-index: 1;
+  // }
+
+  &:hover:after {
+    position: absolute;
+    right: 0;
+    bottom: 100%;
+    content: 'copy';
+    background: #555;
+    color: #fff;
+    font-size: .8rem;
+    line-height: 1.6;
+    padding: 0 .4rem;
+    font-weight: bold;
+  }
+}
+
+@keyframes showCopyable__Tooltip {
+  0% {
+    opacity: 0;
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  88% {
+    opacity: 1;
+  }
+}
+
+.Copyable__Tooltip {
+  $width: 13rem;
+  position: fixed;
+  z-index: 999;
+  opacity: 0;
+  top: 0;
+  left: 50%;
+  max-width: 100%;
+  transform: translateX(-50%);
+  background: #444;
+  color: #fff;
+  text-align: center;
+  animation: showCopyable__Tooltip 1.4s ease-in;
+  font-weight: normal;
+  text-transform: none;
+}
+
+.Copyable__TooltipTextToCopy {
+  padding: .5rem 1rem;
+  display: block;
+  background: #000;
+  font-size: 3rem;
+}
+
+.Copyable__TooltipTitle {
+  position: relative;
+  line-height: 2.5;
+  padding: 0 1em;
+  font-size: .8rem;
+}
+
+.Match__CharCopyable {
+  font-weight: normal;
+  font-size: .85rem;
+}
+
+.AppHeader {
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: $AppHeaderHeight;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.AppHeader__Info {
+  display: flex;
+  justify-content: space-between;
+  // background: #555;
+  // color: #e0e0e0;
+  line-height: 2.2rem;
+
+  a {
+    font-weight: normal;
+    line-height: 2rem;
+    font-size: .8rem;
+  }
+}
+
+.AppHeader__Controls {}
+
+.App__Title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: bold;
+  color: inherit;
+  text-transform: none;
+}
+
+.MinQueryLengthWarning {
+  display: inline-block;
+  background: #db0510;
+  padding: .1rem .4rem;
+  color: #fff;
+
+  @mixin hidden() {
+    opacity: 0;
+    visibility: hidden;
+  }
+  @mixin move($dist) {
+    transform: translateX($dist);
+  }
+  @keyframes showMinQueryWarning {
+    0% {
+      @include hidden();
+    }
+
+    60% {
+      @include hidden();
+    }
+
+    70% {
+      opacity: 1;
+    }
+
+    60% {
+      @include move(-5px);
+    }
+
+    70% {
+      @include move(5px);
+    }
+
+    75% {
+      @include move(-5px);
+    }
+  }
+  animation: showMinQueryWarning 1s ease-in;
+}
+
+.Match__CharContainer {
+  text-align: center;
+}
+
+.Match__Bookmark {
+  position: absolute;
+  top: $matchTopPadding;
+  right: 0;
+  line-height: 1;
+
+  &:hover {
+    background: none;
+    color: inherit;
+  }
+}
+
+.Match__Bookmark {
+  color: #c9c5c5;
+}
+
+.Match__Bookmark--active {
+  color: #55d0e0;
+}
+
+.Matches__FetchingIndicatorContainer {
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: $mainBg;
+  transition: all .4s ease-out;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+
+  &.App--isSettingUp {
+    transition-duration: 0;
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+.MatchFilters  {
+  font-size: 1.3rem;
+
+  .Filter__Toggle {
+    padding: 0 0 .5rem;
+    box-shadow: none;
+    font-weight: inherit;
+    margin-right: 1.5rem;
+    font-family: inherit;
+    display: inline-block;
+
+    &::first-letter {
+      text-transform: capitalize;
+    }
+
+    &--active {
+      color: inherit !important;
+      background: none;
+      border-color: transparent;
+      border-bottom: 1px solid currentColor;
+    }
+  }
+}
+
+.AppTopSection {
+  position: fixed;
+  top: 2.2rem;
+  left: 0;
+  right: 0;
+  height: 30rem;
+}
+
+.AppInfo {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  color: #fff;
+  background: rgba(#424242, 0.98);
+  font-size: .9rem;
+
+  a {
+    color: lighten($colorPrimary, 30%);
+  }
+
+  & > * {
+    padding: 3px 1rem;
+    display: inline-block;
+  }
+}
+
+.AppInfo__Close {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: .2rem .7rem;
+  transform: translate(0, -100%);
+  background: rgba(#424242, 0.9);
+}
+
+.AppInfo__Content {
+  padding: .5rem 1.5rem;
+}
+
+.Pagination {
+  a {
+    @extend .dib;
+    // @extend .f2;
+    // width: 2rem;
+  }
+}

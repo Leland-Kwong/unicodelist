@@ -1,0 +1,17 @@
+blockquote {
+  border-left: 2px solid lighten($colorSecondary, 20%);
+  padding: 0 1em;
+  color: lighten($baseFontColor, 5%);
+
+  $quoteSize: 3rem;
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+}
+
+cite {
+  font-size: 1rem;
+  font-style: normal;
+  @include bold();
+}

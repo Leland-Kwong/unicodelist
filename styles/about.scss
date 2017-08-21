@@ -1,0 +1,13 @@
+$profileImageHeight: calc(40vh + 5vw);
+
+.About {
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.About__ProfileImage {
+  background: url("/static/Leland_K-web (4 of 5).jpg");
+  background-size: cover;
+  height: $profileImageHeight;
+  @extend .MainContent;
+}

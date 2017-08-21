@@ -1,0 +1,15 @@
+.SectionTitle {
+  margin-top: 0;
+  margin-bottom: .5rem;
+  font-size: .85rem;
+  letter-spacing: .01rem;
+  @extend .font-normal;
+}
+
+.SectionTitle__Text {
+  display: inline-block;
+  padding: 0 .4em;
+  line-height: 1.6em;
+  background: #333;
+  color: #fff;
+}

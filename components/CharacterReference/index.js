@@ -1,0 +1,569 @@
+import React, { Component } from 'react';
+import {
+  Input,
+  Icon,
+  LoadingIndicator,
+  GoogleAds,
+  GoogleAnalytics,
+  Main,
+} from '../allComponents';
+import { Filters } from './Filters';
+import { EntityMatch } from './EntityMatch';
+import debounce from 'debounce';
+import Router from 'next/router';
+import classnames from 'classnames';
+import PropTypes from 'prop-types';
+import search from './search';
+import memoize from 'memoizee';
+import { views, getBookmarks, entityID } from './modules';
+import { name as pageTitle } from '../../site.config';
+
+const scrollToTop = () => {
+  document.body.scrollTop = 0;
+};
+
+const basePath = '/';
+
+const updateRoute = function(value = '', filterBy = 'all', page = 0) {
+  const query = encodeURIComponent(value);
+  const _filter = encodeURIComponent(filterBy);
+  const humanFriendlyPage = Number(page) + 1;
+  const href = `${basePath}?query=${query}&filterBy=${_filter}&page=${page}&view=list`;
+  const as = `${basePath}list/${_filter}?query=${query}&page=${humanFriendlyPage}`;
+  Router.push(href, as, { shallow: true });
+};
+
+const updateRouteDebounced = debounce(updateRoute, 200);
+
+const MatchesMeasure = (
+  /* these are hidden placeholder elements used to measure the size of the element */
+  new Array(20).fill(0).map((_, i) => <div key={i} className='Matches__Measure' />)
+);
+
+const filterFns = {
+  all: (entities) => entities,
+  featured: (entities) => {
+    const featured = require('../../static/char-ref-featured.json');
+    return entities.filter(ent => {
+      const uid = entityID(ent);
+      return featured[uid];
+    });
+  },
+  'most used': (entities) => {
+    const faves = getBookmarks();
+    const results = entities
+      .filter(ent => {
+        const uid = entityID(ent);
+        return faves[uid];
+      })
+      .sort(function byCopyFrequency(a, b) {
+        const uidA = entityID(a);
+        const countA = faves[uidA];
+        const uidB = entityID(b);
+        const countB = faves[uidB];
+        if (countA > countB) {
+          return -1;
+        }
+        if (countA < countB) {
+          return 1;
+        }
+        return 0;
+      });
+    return results;
+  }
+};
+
+function inputHandler(query, page) {
+  const { charRefData } = this.state;
+  const normalizedPage = Number(page);
+  const matches = (query.length > 0)
+    ? this.findMatches(query)
+    : charRefData;
+  const { filterBy } = this.getUrlQuery();
+  const filteredMatches = filterFns[filterBy](matches);
+  const batchSize = 80;
+  const start = page * batchSize;
+  const end = (normalizedPage + 1) * batchSize;
+  const nbPages = Math.ceil(filteredMatches.length / batchSize);
+  this.setState({
+    // current slice of matches
+    matches: filteredMatches.slice(start, end),
+    totalMatches: filteredMatches.length,
+    nbPages
+  });
+}
+const debouncedInputHandler = debounce(inputHandler, 100);
+
+const Preset = (value, label = value) => ({ label, value });
+const presets = [
+  Preset('arrow', 'arrows'),
+  Preset('symbol other', 'symbols'),
+  Preset('currency', 'currency'),
+  Preset('symbol math', 'math'),
+  Preset('punctuation', 'punctuation')
+];
+
+const ExampleSearchesOnClick = memoize((value, onClick) => () => onClick(value));
+const ExampleSearches = ({ onClick }) => {
+  const examples = presets.map(({ label, value }) =>
+    <span className='ExampleQuery' key={value}>
+      <a tabIndex={0} onClick={ExampleSearchesOnClick(value, onClick)}>
+        {label}
+      </a>
+    </span>
+  );
+  return (
+    <div className='block tc nowrap overflow-auto'>
+      <span>{examples}</span>
+    </div>
+  );
+};
+
+const EmptyState = ({ query }) => (
+  <h2
+    className='container-full-width'
+    style={{
+      textAlign: 'center',
+      fontSize: '2rem',
+      color: '#8b8b8b',
+      marginTop: '2rem',
+      textTransform: 'none'
+    }}
+  >
+    <div
+      style={{
+        marginBottom: '2rem',
+        fontSize: '1.2em',
+      }}
+    >=(</div>
+    <p>no entities matching “<strong>{query}</strong>”</p>
+  </h2>
+);
+
+class AppInfo extends Component {
+  state = {
+    open: false
+  }
+
+  open = () => {
+    this.setState({ open: true });
+  }
+
+  close = () => {
+    this.setState({ open: false });
+  }
+
+  render() {
+    return (
+      <div className='AppInfo'>
+        {!this.state.open &&
+          <a className='AppInfo__Open' onClick={this.open}>about</a>}
+        {this.state.open &&
+          <span className='AppInfo__Content'>
+            <span>built with ♥ by </span>
+            <a href='https://lelandkwong.com/about' target='_blank'>Leland Kwong</a>
+          </span>}
+        {this.state.open &&
+          <span className='AppInfo__Close' onClick={this.close}>x</span>}
+      </div>
+    );
+  }
+}
+
+const loadingStates = [
+  'fetching entities',
+  'settings things up',
+];
+export class CharacterReference extends Component {
+
+  static propTypes = {
+    basePath: PropTypes.string.isRequired,
+    query: PropTypes.object.isRequired
+  }
+
+  constructor(props) {
+    super(props);
+    const { query } = this.props;
+    this.state = {
+      inputValue: query.query,
+      matches: [],
+      matchesPage: query.page,
+      totalMatches: 0,
+      // need this data to persist across route transtions
+      charRefData: [],
+      // used for <ShareLinks>
+      pageUrl: '',
+      loadingState: 0
+    };
+
+    if (process.browser) {
+      window.addEventListener('resize', this.updateMatchStyle);
+
+      // fetch dataset
+      const fetch = require('isomorphic-fetch');
+      this.charRefData = fetch(`${location.protocol}//${location.host}/static/char-ref-full.json`)
+        .then(res => res.json());
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    let changed = false;
+    const urlQuery = this.getUrlQuery();
+    for (const key in nextProps.url.query) {
+      if (urlQuery[key] !== nextProps.url.query[key]) {
+        changed = true;
+        break;
+      }
+    }
+    if (changed) {
+      if (nextProps.url.query.view === views.detail) {
+        document.body.style.overflow = 'hidden';
+        return;
+      }
+
+      document.body.style.overflow = null;
+      this.handleInput({
+        value: nextProps.url.query.query,
+        debounce: false,
+        filterBy: nextProps.url.query.filterBy,
+        page: nextProps.url.query.page,
+      });
+    }
+  }
+
+  async componentDidMount() {
+    await new Promise((resolve) => {
+      this.setState(({ loadingState }) => ({
+        pageUrl: location.href,
+        loadingState: loadingState + 1
+      }), resolve);
+    });
+    const preparedData = this.charRefData.then(res => {
+      const columnTransformations = {
+        category(value) {
+          return res.categoriesMapping[value] || 'Symbol, Other';
+        },
+        default(value) {
+          return value;
+        }
+      };
+      return res.mappings.map(entity => {
+        const newEntity = {};
+        const { columnDefs } = res;
+        for (let i = 0; i < res.columnDefs.length; i++) {
+          const colName = columnDefs[i];
+          const transformFn = columnTransformations[colName] || columnTransformations.default;
+          newEntity[colName] = transformFn(entity[i]);
+        }
+        newEntity.css = '\\' + newEntity.hex.slice(3, -1);
+        return newEntity;
+      });
+    });
+    const charRefData = (await preparedData).sort((a, b) => {
+      if (a.hex < b.hex) {
+        return -1;
+      }
+
+      if (a.hex > b.hex) {
+        return 1;
+      }
+
+      return 0;
+    });
+
+    this.search = search(charRefData);
+    this.setState({
+      charRefData,
+    }, () => {
+      this.setState(({ loadingState }) =>
+        ({
+          loadingState: loadingState + 1,
+        })
+      );
+      // set initial query
+      this.handleInput({
+        value: this.props.query.query,
+        debounce: false,
+        force: true,
+        page: this.props.query.page
+      });
+    });
+
+  }
+
+  findMatches = (query) => {
+    const start = performance.now();
+
+    // only trim if more than one character otherwise tab characters and &nbsp; will get trimmed
+    const normalizedQuery = query.length > 1 ? query.trim() : query;
+    const result = this.search(normalizedQuery);
+
+    console.log({ took: performance.now() - start });
+
+    return result;
+  }
+
+  isDataReady = () => {
+    return !!this.state.charRefData.length;
+  }
+
+  getUrlQuery = () => {
+    const { query, filterBy, page = 0, view = views.list, detail = null } = this.props.url.query;
+    return {
+      view,
+      detail,
+      page,
+      query,
+      filterBy: (filterBy in filterFns) ? filterBy : 'all'
+    };
+  }
+
+  handleInput = ({
+    value = '',
+    debounce = true,
+    // default to first page unless specified
+    page = this.getUrlQuery().page,
+    force = false,
+    filterBy = this.getUrlQuery().filterBy
+  }) => {
+    const hasChanged = value !== this.state.inputValue ||
+      filterBy !== this.getUrlQuery().filterBy ||
+      page != this.getUrlQuery().page;
+    if (!force && !hasChanged) {
+      return;
+    }
+    // if (value !== this.getUrlQuery().query) {
+    //   updateRouteDebounced.call(this, value, filterBy, page);
+    // }
+    this.setState({
+      inputValue: value,
+      matchesPage: Number(page),
+      filterBy
+    }, () => {
+      ((debounce && value.length) ? debouncedInputHandler : inputHandler).call(this, value, page);
+    });
+    this.updateMatchStyle();
+  }
+
+  // forces a list refresh
+  refreshList = () => {
+    this.handleInput({
+      value: this.state.inputValue,
+      force: true,
+      debounce: false,
+      page: this.state.matchesPage,
+      scrollTop: false
+    });
+  }
+
+  updateMatchStyle = () => {
+    const child = this.measure.children[0];
+    const matchWidth = Math.floor(child.getBoundingClientRect().width);
+    const { marginLeft } = window.getComputedStyle(child);
+    const calcWith = matchWidth + parseInt(marginLeft);
+    const numCols = Math.round(this.measure.clientWidth / calcWith);
+    if (this.numCols === numCols) {
+      return;
+    }
+    this.numCols = numCols;
+    this.matchStyle.textContent = `
+.Match {
+  flex: 0 0 calc((100% / ${numCols}) - ${marginLeft} - calc(${marginLeft} / ${numCols}));
+}
+    `;
+  }
+
+  MainView = () => {
+    const {
+      inputValue,
+      matches,
+      totalMatches,
+      charRefData,
+      filterBy,
+      nbPages,
+      matchesPage
+    } = this.state;
+
+    const PrevNext = ({ visible = true, page, ...rest }) => {
+      return (
+        <a
+          className='dib'
+          style={{ visibility: visible ? 'visible' : 'hidden' }}
+          onClick={() => {
+            updateRoute(
+              inputValue,
+              filterBy,
+              page
+            );
+            scrollToTop();
+          }}
+          {...rest}
+        />
+      );
+    };
+
+    const lastPage = nbPages - 1;
+    const PageInfo = (
+      <div
+        className='f6 tc dib'
+        style={{ margin: '0 1rem' }}
+      >{matchesPage + 1} / {nbPages}</div>
+    );
+    const Pagination = (
+      <div className='Pagination tc mb4'>
+        <PrevNext visible={matchesPage > 0} page={matchesPage - 1}>
+          ‹ Prev
+        </PrevNext>
+        {PageInfo}
+        <PrevNext visible={matchesPage < lastPage} page={matchesPage + 1}>
+          Next <strong>›</strong>
+        </PrevNext>
+      </div>
+    );
+
+    return (
+      <main>
+        <div className='container-full-width'>
+          <div>
+            <ExampleSearches
+              onClick={(query) => {
+                const { filterBy } = this.getUrlQuery();
+                updateRoute(query, filterBy);
+              }}
+            />
+            <h2 className='overflow-auto nowrap'>
+              <Filters
+                options={['all', 'featured', 'most used'].map(name =>
+                  ({ label: name, value: name }))
+                }
+                value={filterBy}
+                onClick={(filterBy) => {
+                  const query = this.getUrlQuery();
+                  updateRoute(query.query, filterBy);
+                }}
+              />
+            </h2>
+          </div>
+        </div>
+        <div className='container-full-width'>
+          <div className='color-sub-text' style={{ width: '13rem', marginRight: '' }}>
+            <div style={{ fontSize: 11 }}>viewing <strong>{totalMatches}</strong> of {charRefData.length} entities</div>
+          </div>
+        </div>
+        <div className='MatchesMain' ref={$ => this.$MatchesMain = $}>
+          {this.isDataReady() && !matches.length
+            && <EmptyState query={inputValue} />}
+          <div className='Matches'>
+            {matches.map(match => (
+              <EntityMatch
+                key={match.hex}
+                view={this.getUrlQuery().view}
+                metadata={match}
+                onCopy={this.refreshList}
+              />
+            ))}
+          </div>
+          {Pagination}
+        </div>
+      </main>
+    );
+  }
+
+  DetailView = ({ metadata }) => {
+    return (
+      <main style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: '#fff'
+      }}
+      >
+        <EntityMatch
+          metadata={metadata}
+          onCopy={this.refreshList}
+          view={this.getUrlQuery().view}
+        />
+      </main>
+    );
+  }
+
+  render() {
+    const { inputValue } = this.state;
+
+    return (
+      <Main>
+        <div className='Match__Measuring'>
+          <style className='Match__Style' ref={ref => this.matchStyle = ref} />
+          <div className='Matches' ref={ref => this.measure = ref}>
+            {MatchesMeasure}
+          </div>
+        </div>
+        <header className='AppHeader block'>
+          <div className='AppHeader__Info container-full-width'>
+            <div className='grid'>
+              <h1 className='App__Title'>
+                <a
+                  href={basePath}
+                  className='mid-gray'
+                  onClick={(ev) => {
+                    ev.preventDefault();
+                    updateRoute();
+                  }}
+                >{pageTitle}</a>
+              </h1>
+            </div>
+            <div>
+              <a className='grid' href='mailto:leland.kwong@gmail.com' target='_blank'>
+                <Icon name='mail3' />&nbsp;<span>send feedback</span>
+              </a>
+            </div>
+          </div>
+          <section
+            className='AppHeader__Controls'
+            style={{ display: 'flex', 'flexDirection': 'column', 'alignItems': 'stretch', flexGrow: 1, justifyContent: 'center' }}
+          >
+            <div className='grid'>
+              <div style={{ flexGrow: 1 }}>
+                <Input
+                  type='search'
+                  autoFocus={true}
+                  className='char-input'
+                  onChange={ev => {
+                    scrollToTop();
+                    this.handleInput({ value: ev.target.value, page: 0 });
+                    updateRouteDebounced(ev.target.value, this.getUrlQuery().filterBy, 0);
+                  }}
+                  value={inputValue}
+                  placeholder={`arrow, nbsp, ©, 02713 ...`}
+                  inputRef={input => this.input = input}
+                />
+              </div>
+            </div>
+          </section>
+        </header>
+        {this.MainView()}
+        {(this.getUrlQuery().view === views.detail)
+          && this.isDataReady()
+          && this.DetailView({ metadata: this.findMatches(this.getUrlQuery().detail)[0] })}
+        <AppInfo />
+        <div
+          className={classnames(
+            'Matches__FetchingIndicatorContainer',
+            { 'App--isSettingUp': this.state.loadingState < loadingStates.length }
+          )}
+        >
+          <h1
+            className='App__Title'
+            style={{ position: 'absolute', top: '1rem', left: '1rem', margin: 0 }}
+          >{pageTitle}</h1>
+          <LoadingIndicator style={{ marginTop: '-4rem' }} />
+          <h4>{loadingStates[this.state.loadingState]}</h4>
+        </div>
+        <GoogleAds />
+        <GoogleAnalytics />
+      </Main>
+    );
+  }
+}

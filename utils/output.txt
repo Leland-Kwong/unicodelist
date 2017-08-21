@@ -1,0 +1,303 @@
+---
+  title: Some real talk about jQuery
+  author: Leland Kwong
+  date: 2017-07-21
+  updated: 2017-07-27 11:31
+  tags:
+    - jquery
+    - javascript
+---
+::: intro
+Reflecting on the last 4 years of my development career, it dawned on me that I haven't touched jQuery in a long while. Not that I've been actively avoiding the library, it just no longer suits my needs. Heres why...
+:::
+
+## DOM manipulation became less necessary
+jQuery was an immensely powerful tool at a time when direct DOM manipulation was the only option for building the interactive web. And then frontend frameworks like [Vue](http://vuejs.org), [Angular](http://angular.io), and [React](https://facebook.github.io/react/) abstracted the DOM away so that instead of doing this:
+
+```html
+<div>
+  <button>Click me</button>
+</div>
+```
+
+```javascript
+// jQuery
+function toggleSelected() {
+  $(this).toggleClass('selected');
+}
+$('button').on('click', toggleSelected);
+```
+
+we could do this:
+
+```html
+<div id="app"></div>
+```
+
+```javascript
+// React
+class App extends Component {
+  state = {
+    isReady: false
+  }
+
+  toggleSelected = () => {
+    this.setState({ isReady: !this.state.isReady });
+  }
+
+  render() {
+    return (
+      <button onClick={this.toggleSelected}>Click me</button>
+    )
+  }
+}
+React.render(
+  document.querySelector('#app'),
+  <App />
+);
+```
+
+The beauty of the React example is we can immediately understand what the markup is doing just by looking at it, whereas the html in the jQuery example has no indicators of anything happening.
+
+## NPM modules solve many problems already
+Need a good ajax method? [Axios](https://www.npmjs.com/package/axios) can handle that. Need some fancy layout library? [Packery](https://www.npmjs.com/package/packery) got us covered.
+
+## NodeLists can now be easily iterated over
+Iterating over a collection of nodes used to require looping or [hackery](https://davidwalsh.name/nodelist-array), and this was where jQuery shined:
+
+```javascript
+// vanilla js
+const elems = document.querySelectorAll('.items');
+for (let i = 0; i < elems.length; i++) {
+  const elem = elems[i];
+  // do DOM manipulation
+}
+
+// jQuery
+$('.items').forEach(function() {
+  const elem = $(this);
+  // do your stuff here
+})
+```
+
+Thanks to recent additions to [NodeList](https://developer.mozilla.org/en-US/docs/Web/API/NodeList) apis we can now do this:
+
+```javascript
+// vanilla js
+document.querySelectorAll('.items')
+  .forEach(function(elem) {
+    // do DOM manipulation
+  })
+```
+
+## Companies are using it less
+The last 2 startups I worked with didn't have any jQuery in their codebase. In fact, all my previous colleagues would even joke about how jQuery code was just spaghetti and how glad they were to not ever touch it again.
+
+To provide an analytical context to this, take a look at the most recent [Google trends](https://trends.google.com/trends/explore?date=today%205-y&q=%2Fm%2F0268gyp,%2Fm%2F0j45p7w,%2Fm%2F012l1vxv):
+
+![frontend framework trends - 2017](/static/frontend-frameworks-trends-2017.png)
+
+## Parting words
+I know jQuery holds a special place in every developers' hearts, mine included. For some of us, we still need to use it for legacy reasons, or maybe it actually is the right tool for the job. Perhaps one day I'll go back to using jQuery. As for now, React has become that tool.
+,---
+  title: Some real talk about jQuery
+  author: Leland Kwong
+  date: 2017-07-21
+  updated: 2017-07-27 11:31
+  tags:
+    - jquery
+    - javascript
+---
+::: intro
+Reflecting on the last 4 years of my development career, it dawned on me that I haven't touched jQuery in a long while. Not that I've been actively avoiding the library, it just no longer suits my needs. Heres why...
+:::
+
+## DOM manipulation became less necessary
+jQuery was an immensely powerful tool at a time when direct DOM manipulation was the only option for building the interactive web. And then frontend frameworks like [Vue](http://vuejs.org), [Angular](http://angular.io), and [React](https://facebook.github.io/react/) abstracted the DOM away so that instead of doing this:
+
+```html
+<div>
+  <button>Click me</button>
+</div>
+```
+
+```javascript
+// jQuery
+function toggleSelected() {
+  $(this).toggleClass('selected');
+}
+$('button').on('click', toggleSelected);
+```
+
+we could do this:
+
+```html
+<div id="app"></div>
+```
+
+```javascript
+// React
+class App extends Component {
+  state = {
+    isReady: false
+  }
+
+  toggleSelected = () => {
+    this.setState({ isReady: !this.state.isReady });
+  }
+
+  render() {
+    return (
+      <button onClick={this.toggleSelected}>Click me</button>
+    )
+  }
+}
+React.render(
+  document.querySelector('#app'),
+  <App />
+);
+```
+
+The beauty of the React example is we can immediately understand what the markup is doing just by looking at it, whereas the html in the jQuery example has no indicators of anything happening.
+
+## NPM modules solve many problems already
+Need a good ajax method? [Axios](https://www.npmjs.com/package/axios) can handle that. Need some fancy layout library? [Packery](https://www.npmjs.com/package/packery) got us covered.
+
+## NodeLists can now be easily iterated over
+Iterating over a collection of nodes used to require looping or [hackery](https://davidwalsh.name/nodelist-array), and this was where jQuery shined:
+
+```javascript
+// vanilla js
+const elems = document.querySelectorAll('.items');
+for (let i = 0; i < elems.length; i++) {
+  const elem = elems[i];
+  // do DOM manipulation
+}
+
+// jQuery
+$('.items').forEach(function() {
+  const elem = $(this);
+  // do your stuff here
+})
+```
+
+Thanks to recent additions to [NodeList](https://developer.mozilla.org/en-US/docs/Web/API/NodeList) apis we can now do this:
+
+```javascript
+// vanilla js
+document.querySelectorAll('.items')
+  .forEach(function(elem) {
+    // do DOM manipulation
+  })
+```
+
+## Companies are using it less
+The last 2 startups I worked with didn't have any jQuery in their codebase. In fact, all my previous colleagues would even joke about how jQuery code was just spaghetti and how glad they were to not ever touch it again.
+
+To provide an analytical context to this, take a look at the most recent [Google trends](https://trends.google.com/trends/explore?date=today%205-y&q=%2Fm%2F0268gyp,%2Fm%2F0j45p7w,%2Fm%2F012l1vxv):
+
+![frontend framework trends - 2017](/static/frontend-frameworks-trends-2017.png)
+
+## Parting words
+I know jQuery holds a special place in every developers' hearts, mine included. For some of us, we still need to use it for legacy reasons, or maybe it actually is the right tool for the job. Perhaps one day I'll go back to using jQuery. As for now, React has become that tool.
+,---
+  title: Some real talk about jQuery
+  author: Leland Kwong
+  date: 2017-07-21
+  updated: 2017-07-27 11:31
+  tags:
+    - jquery
+    - javascript
+---
+::: intro
+Reflecting on the last 4 years of my development career, it dawned on me that I haven't touched jQuery in a long while. Not that I've been actively avoiding the library, it just no longer suits my needs. Heres why...
+:::
+
+## DOM manipulation became less necessary
+jQuery was an immensely powerful tool at a time when direct DOM manipulation was the only option for building the interactive web. And then frontend frameworks like [Vue](http://vuejs.org), [Angular](http://angular.io), and [React](https://facebook.github.io/react/) abstracted the DOM away so that instead of doing this:
+
+```html
+<div>
+  <button>Click me</button>
+</div>
+```
+
+```javascript
+// jQuery
+function toggleSelected() {
+  $(this).toggleClass('selected');
+}
+$('button').on('click', toggleSelected);
+```
+
+we could do this:
+
+```html
+<div id="app"></div>
+```
+
+```javascript
+// React
+class App extends Component {
+  state = {
+    isReady: false
+  }
+
+  toggleSelected = () => {
+    this.setState({ isReady: !this.state.isReady });
+  }
+
+  render() {
+    return (
+      <button onClick={this.toggleSelected}>Click me</button>
+    )
+  }
+}
+React.render(
+  document.querySelector('#app'),
+  <App />
+);
+```
+
+The beauty of the React example is we can immediately understand what the markup is doing just by looking at it, whereas the html in the jQuery example has no indicators of anything happening.
+
+## NPM modules solve many problems already
+Need a good ajax method? [Axios](https://www.npmjs.com/package/axios) can handle that. Need some fancy layout library? [Packery](https://www.npmjs.com/package/packery) got us covered.
+
+## NodeLists can now be easily iterated over
+Iterating over a collection of nodes used to require looping or [hackery](https://davidwalsh.name/nodelist-array), and this was where jQuery shined:
+
+```javascript
+// vanilla js
+const elems = document.querySelectorAll('.items');
+for (let i = 0; i < elems.length; i++) {
+  const elem = elems[i];
+  // do DOM manipulation
+}
+
+// jQuery
+$('.items').forEach(function() {
+  const elem = $(this);
+  // do your stuff here
+})
+```
+
+Thanks to recent additions to [NodeList](https://developer.mozilla.org/en-US/docs/Web/API/NodeList) apis we can now do this:
+
+```javascript
+// vanilla js
+document.querySelectorAll('.items')
+  .forEach(function(elem) {
+    // do DOM manipulation
+  })
+```
+
+## Companies are using it less
+The last 2 startups I worked with didn't have any jQuery in their codebase. In fact, all my previous colleagues would even joke about how jQuery code was just spaghetti and how glad they were to not ever touch it again.
+
+To provide an analytical context to this, take a look at the most recent [Google trends](https://trends.google.com/trends/explore?date=today%205-y&q=%2Fm%2F0268gyp,%2Fm%2F0j45p7w,%2Fm%2F012l1vxv):
+
+![frontend framework trends - 2017](/static/frontend-frameworks-trends-2017.png)
+
+## Parting words
+I know jQuery holds a special place in every developers' hearts, mine included. For some of us, we still need to use it for legacy reasons, or maybe it actually is the right tool for the job. Perhaps one day I'll go back to using jQuery. As for now, React has become that tool.

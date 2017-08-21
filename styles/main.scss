@@ -1,0 +1,220 @@
+@import url('https://fonts.googleapis.com/css?family=Bitter:700|Montserrat:400,400i,600');
+
+$font-family-sans-serif:
+  // Safari for OS X and iOS (San Francisco)
+  -apple-system,
+  // Chrome >= 56 for OS X (San Francisco), Windows, Linux and Android
+  system-ui,
+  // Chrome < 56 for OS X (San Francisco)
+  BlinkMacSystemFont,
+  // Windows
+  "Segoe UI",
+  // Android
+  "Roboto",
+  // Basic web fallback
+  "Helvetica Neue", Arial, sans-serif !default;
+
+.titleFont {
+  font-family: 'Bitter', sans-serif;
+  font-weight: 700;
+}
+
+.bodyFont {
+  font-family: 'Montserrat', $font-family-sans-serif;
+}
+
+@mixin normal() {
+  font-weight: 400;
+}
+
+@mixin bold() {
+  font-weight: 600;
+}
+
+.font-normal {
+  @include normal();
+}
+
+.font-bold {
+  @include bold();
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 18px;
+
+  @media all and (max-width: $medWidth) {
+    font-size: 17px;
+  }
+
+  @media all and (max-width: $maxWidth) {
+    font-size: 15.5px;
+  }
+}
+
+body {
+  @extend .bodyFont;
+  @include normal();
+  color: $baseFontColor;
+  $darkBgColor: darken($baseBackgroundColor, 4%);
+  background: $baseBackgroundColor;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  background-repeat: no-repeat;
+}
+
+a {
+  color: $colorSecondary;
+  @extend .font-bold;
+  cursor: pointer;
+
+  &:not(:hover) {
+    text-decoration: none;
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @extend .titleFont;
+  line-height: 1.2;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: $headingFontColor;
+
+  a {
+    @extend .titleFont;
+  }
+}
+
+h1 {
+  font-size: 2em;
+}
+
+h2 {
+  font-size: 1.6rem;
+}
+
+h3 {
+  font-size: 1.35rem;
+}
+
+h4 {
+  font-size: 1.2rem;
+}
+
+h5, h6 {
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+
+p {
+  margin: 0 0 1em 0;
+}
+
+pre, figure, blockquote {
+  margin: 1rem 0;
+}
+
+main {
+  min-height: 100vh;
+}
+
+@mixin card() {
+  padding: 1rem 0;
+  @include fullContainerSidePadding();
+}
+
+.grid {
+  display: flex;
+  align-items: center;
+
+  &-justify-content-center {
+    justify-content: center;
+  }
+}
+
+@mixin containerLg() {
+  margin-left: auto;
+  margin-right: auto;
+  @include fullContainerSidePadding();
+  max-width: $maxWidth;
+  width: calc(100% - .7rem);
+
+  @media all and (max-width: $maxWidth) {
+    max-width: none;
+    width: 100%;
+  }
+}
+
+.container-lg {
+  @include containerLg();
+}
+
+.container-full-width {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.MainContent {
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+
+  $vPadding: 1rem;
+  padding-top: $vPadding;
+  padding-bottom: $vPadding;
+}
+
+.PageTitle {
+  @extend .bodyFont;
+  // @include normal();
+  font-size: .9rem;
+  color: #555;
+  text-transform: uppercase;
+  margin-top: 0;
+  padding-top: 0;
+  // margin-bottom: -.5rem;
+}
+
+.block-image-container {
+  overflow: hidden;
+  display: block;
+
+  img {
+    margin: 0 auto;
+    display: block;
+    max-width: 100%;
+  }
+}
+
+img {
+  border: 1px solid #000;
+}
+
+[class*=Permalink] {
+  display: inline-block;
+  transform: translate(-.8rem, -.3em);
+  width: 0;
+  font-size: 1rem;
+  color: #ccc;
+  font-family: sans-serif;
+  font-weight: normal;
+
+  &:hover {
+    color: #777;
+  }
+
+  &:before {
+    content: "#";
+  }
+}
+
+.MiniDivider {
+  width: 2rem;
+  border-bottom: 3px solid currentColor;
+  margin-bottom: 2rem;
+}

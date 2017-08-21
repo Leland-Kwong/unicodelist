@@ -1,0 +1,100 @@
+$color: #333;
+
+.MainHeader {
+  @include containerLg();
+
+  display: flex;
+  align-items: flex-end;
+  // justify-content: space-between;
+  max-width: none;
+  color: #444;
+  padding-top: .5rem;
+  margin-bottom: 1rem;
+  padding-bottom: .5rem;
+
+  @media all and (max-width: $maxWidth) {
+    flex-direction: column;
+    max-width: none;
+    align-items: center;
+    padding-bottom: 0;
+  }
+
+  a {
+    &:hover {
+      transform: scale(1.1);
+      color: initial;
+    }
+  }
+}
+
+.MainHeader__Nav {
+  $bg: #dddddd;
+  margin-bottom: -2px;
+  display: flex;
+  align-items: center;
+  margin-left: 1.75rem;
+  height: 2rem;
+
+  @media all and (max-width: $maxWidth) {
+    margin: .5rem 0 1rem;
+    height: auto;
+  }
+}
+
+.Nav__Link {
+  @extend .font-normal;
+  color: $color;
+  text-transform: uppercase;
+  display: inline-block;
+  // padding: 0;
+  letter-spacing: 0.07em;
+  text-decoration: none;
+  margin-right: 2em;
+  transition: transform .1s ease;
+  font-size: .8rem;
+  border-bottom: 1px solid transparent;
+
+  @media all and (max-width: $maxWidth) {
+    font-size: .85rem;
+  }
+}
+
+.ActiveLink {
+  border-bottom-color: currentColor;
+}
+
+.Nav {
+  max-width: 30rem;
+  transition: all .2s ease;
+}
+
+.Nav.Nav--Searching {
+  opacity: 0;
+}
+
+.LogoLink {
+  height: 2.5rem;
+  color: #000;
+  display: flex;
+  align-items: center;
+  transition: all .15s ease;
+  text-decoration: none;
+  border: none;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.icon-logo-v2 {
+  font-size: 32px;
+  color: inherit;
+}
+
+.icon-logo-v2-type {
+  position: relative;
+  left: 3px;
+  top: 1px;
+  font-size: 48px;
+  color: inherit;
+}

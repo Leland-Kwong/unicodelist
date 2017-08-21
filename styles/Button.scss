@@ -1,0 +1,98 @@
+@mixin inputShared() {
+  -webkit-appearance: none;
+  padding: 0 1rem;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 2.4rem;
+}
+
+input,
+[type="search"] {
+  @include inputShared();
+  border: 0;
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 0;
+  background: #fbfbfb;
+  box-shadow: inset 0 0 2px rgba(0,0,0,0.1);
+
+  $placeholderColor: #999;
+  ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: $placeholderColor;
+  }
+  ::-moz-placeholder { /* Firefox 19+ */
+    color: $placeholderColor;
+  }
+  :-ms-input-placeholder { /* IE 10+ */
+    color: $placeholderColor;
+  }
+  :-moz-placeholder { /* Firefox 18- */
+    color: $placeholderColor;
+  }
+
+  &:focus {
+    border-color: $colorSecondary;
+    outline: 0;
+    background: #fff;
+  }
+}
+
+.Btn,
+[type="submit"] {
+  @include inputShared();
+  background: darken($colorSecondary, 5%);
+  color: #fff;
+  text-transform: uppercase;
+  font-size: .8rem;
+  letter-spacing: .05em;
+  @include normal();
+  transition: all .15s ease;
+  border-radius: 0;
+  display: inline-block;
+  box-shadow: none;
+  cursor: pointer;
+  text-decoration: none;
+  border: 0;
+
+  &:hover {
+    background: darken($colorSecondary, 10%);
+  }
+}
+
+button {
+  @include inputShared();
+  background: #fff;
+  // border-radius: 2px;
+  border: 1px solid #d4d4d4;
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: 0;
+  padding: 0 .7em;
+  text-transform: uppercase;
+  font-size: .8rem;
+  letter-spacing: .05em;
+
+  &:hover {
+    background: #f6f6f6;
+    border-color: #999;
+  }
+
+  &:active {
+    background: $colorSecondary;
+    color: #fff;
+  }
+}
+
+.Input__Container {
+  position: relative;
+}
+
+.Input__SearchIcon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: .6em;
+}
+
+[type="search"] {
+  padding-left: 2em;
+}

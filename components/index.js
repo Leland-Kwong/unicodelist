@@ -1,0 +1,1 @@
+export { CharacterReference } from './allComponents';
