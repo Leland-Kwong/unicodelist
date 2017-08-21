@@ -2,7 +2,7 @@ const { parse } = require('url');
 const path = require('path');
 const express = require('express');
 const next = require('next');
-const LRUCache = require('lru-cache');
+// const LRUCache = require('lru-cache');
 const bodyParser = require('body-parser');
 const { promisify } = require('util');
 const fs = require('fs');
@@ -13,42 +13,42 @@ const app = next({ dir: '.', dev });
 const handle = app.getRequestHandler();
 
 // This is where we cache our rendered HTML pages
-const ssrCache = new LRUCache({
-  max: 100,
-  maxAge: 1000 * 60 * 60 // 1hour
-});
-
-/*
- * NB: make sure to modify this to take into account anything that should trigger
- * an immediate page change (e.g a locale stored in req.session)
- */
-function getCacheKey (req) {
-  return `${req.url}`;
-}
-
-function renderAndCache (req, res, pagePath, queryParams) {
-  const key = getCacheKey(req);
-
-  // If we have a page in the cache, let's serve it
-  if (!dev && ssrCache.has(key)) {
-    console.log(`CACHE HIT: ${key}`);
-    res.send(ssrCache.get(key));
-    return;
-  }
-
-  // If not let's render the page into HTML
-  app.renderToHTML(req, res, pagePath, queryParams)
-    .then((html) => {
-      // Let's cache this page
-      console.log(`CACHE MISS: ${key}`);
-      ssrCache.set(key, html);
-
-      res.send(html);
-    })
-    .catch((err) => {
-      app.renderError(err, req, res, pagePath, queryParams);
-    });
-}
+// const ssrCache = new LRUCache({
+//   max: 100,
+//   maxAge: 1000 * 60 * 60 // 1hour
+// });
+//
+// /*
+//  * NB: make sure to modify this to take into account anything that should trigger
+//  * an immediate page change (e.g a locale stored in req.session)
+//  */
+// function getCacheKey (req) {
+//   return `${req.url}`;
+// }
+//
+// function renderAndCache (req, res, pagePath, queryParams) {
+//   const key = getCacheKey(req);
+//
+//   // If we have a page in the cache, let's serve it
+//   if (!dev && ssrCache.has(key)) {
+//     console.log(`CACHE HIT: ${key}`);
+//     res.send(ssrCache.get(key));
+//     return;
+//   }
+//
+//   // If not let's render the page into HTML
+//   app.renderToHTML(req, res, pagePath, queryParams)
+//     .then((html) => {
+//       // Let's cache this page
+//       console.log(`CACHE MISS: ${key}`);
+//       ssrCache.set(key, html);
+//
+//       res.send(html);
+//     })
+//     .catch((err) => {
+//       app.renderError(err, req, res, pagePath, queryParams);
+//     });
+// }
 
 function wwwRedirect(req, res, next) {
   if (req.headers.host.slice(0, 4) === 'www.') {
@@ -79,26 +79,35 @@ function startApp() {
   //   renderAndCache(req, res, '/', req.query);
   // });
 
-  server.get([
-    '/',
-    '/:view',
-    '/:view/:detail',
-    '/:view/:filterBy',
-  ], (req, res) => {
-    const reqQuery = Object.assign({ query: '', page: 0 }, req.query);
+  const getFn = (req, res, query, params) => {
+    const reqQuery = Object.assign({ query: '', page: 0 }, query);
     const { page } = reqQuery;
-    console.log(page, isNaN(page));
     // adjust human friendly page to actual programmatic page index
     reqQuery.page = (page > 0) ? page - 1 : page;
     reqQuery.page = isNaN(reqQuery.page) ? 0 : reqQuery.page;
-    const query = { query: reqQuery.query, filterBy: 'all', page: reqQuery.page, view: 'list', detail: {} };
-    for (const key in req.params) {
-      const val = req.params[key];
+    const queryToSend = { query: reqQuery.query, filterBy: 'all', page: reqQuery.page, view: 'list', detail: {} };
+    for (const key in params) {
+      const val = params[key];
       if (typeof val !== 'undefined') {
-        query[key] = val;
+        queryToSend[key] = val;
       }
     }
-    app.render(req, res, '/', query);
+    app.render(req, res, '/', queryToSend);
+  };
+
+  server.get([
+    '/detail',
+    '/detail/:detail'
+  ], (req, res) => {
+    getFn(req, res, req.query, { view: 'detail', detail: req.params.detail });
+  });
+
+  server.get([
+    '/',
+    '/list',
+    '/list/:filterBy',
+  ], (req, res) => {
+    getFn(req, res, req.query, { view: 'list', filterBy: req.params.filterBy });
   });
 
   const googleSearchVerificationFile = 'google6f87e86940b3fcab.html';

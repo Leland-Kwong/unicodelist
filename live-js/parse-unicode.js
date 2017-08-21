@@ -6,6 +6,7 @@ const charRefW3Hash = charRefW3.reduce((chars, entity) => {
   chars[entity.character] = entity;
   return chars;
 }, {});
+const chalk = require('chalk');
 
 // [category reference](http://www.fileformat.info/info/unicode/category/index.htm)
 const categories = ['Cc','Cf','Cn','Co','Cs','LC','Ll','Lm','Lo','Lt','Lu','Mc','Me','Mn','Nd','Nl','No','Pc','Pd','Pe','Pf','Pi','Po','Ps','Sc','Sk','Sm','So','Zl','Zp','Zs'];
@@ -33,7 +34,7 @@ const unicodeOrgList = categories.map(cat => {
       category
     } = charsByUnicode[k];
     return [
-      '&#' + hex,
+      '&#x' + hex + ';',
       desc.toLowerCase(),
       character,
       // named
@@ -80,6 +81,9 @@ fs.writeFile('./static/char-ref-full.json',
       console.log(err);
       return;
     }
-    console.log('char-ref-full.json created');
+    console.log(
+      `${new Date().toISOString()}`,
+      chalk.green('char-ref-full.json created')
+    );
   }
 );

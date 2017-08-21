@@ -55,7 +55,7 @@ export class EntityMatch extends Component {
   }
 
   addToCopyCount = () => {
-    setBookmarks(this.entityID);
+    setBookmarks(this.props.metadata.hex);
   }
 
   handleCopy = () => {

@@ -1,5 +1,6 @@
 import memoize from 'memoizee';
 
+const featured = require('../../static/char-ref-featured.json');
 const wordRegEx = memoize(word => new RegExp(word, 'i'));
 const matchWordCount = (string = '', words = []) => {
   let matchCount = 0;
@@ -33,31 +34,50 @@ function sortByRelevancy(a, b, words) {
   return 0;
 }
 
-const findMatches = (query, charRefData) => {
-  const escaped = query.replace(/[\\]/g, '');
-  const words = escaped.split(/\s/); // spaces and dashes
-  const queryRe = new RegExp(escaped, 'gi');
-
-  const matchesByProp = charRefData.filter(item => {
+const findMatches = (query, data, queryRe, words) => {
+  const matchesByProp = data.filter(item => {
     return queryRe.test(item.character)
       || queryRe.test(item.hex)
       || queryRe.test(item.dec)
       || queryRe.test(item.named)
       || queryRe.test(item.css.slice(1));
   });
-  const matchesByNameOrDesc = charRefData.filter((item) =>
+  const matchesByNameOrDesc = data.filter((item) =>
     !matchesByProp.includes(item) && (
       matchWordCount(item.desc, words) === words.length
       || matchWordCount(item.category, words) === words.length
     )
   );
-  return matchesByProp.concat(matchesByNameOrDesc)
-    .sort((a, b) => sortByRelevancy(a, b, words));
+  return matchesByProp.concat(matchesByNameOrDesc);
 };
 
 export default (data) => {
+  const featuredGroup = [];
+  const rest = [];
+  for (let i = 0; i < data.length; i++) {
+    const item = data[i];
+    if (item.hex in featured) {
+      featuredGroup.push(item);
+    } else {
+      rest.push(item);
+    }
+  }
+  featuredGroup.sort(function byHexCode(a, b) {
+    if (a.hex < b.hex) {
+      return -1;
+    }
+    if (a.hex > b.hex) {
+      return 1;
+    }
+    return 0;
+  });
   return memoize((query) => {
-    const matches = findMatches(query, data);
-    return matches;
+    const escaped = query.replace(/[\\]/g, '');
+    const queryRe = new RegExp(escaped, 'gi');
+    const words = escaped.split(/\s/); // spaces and dashes
+    const matches = findMatches(query, rest, queryRe, words)
+      .sort((a, b) => sortByRelevancy(a, b, words));
+    const featuredMatches = findMatches(query, featuredGroup, queryRe, words);
+    return featuredMatches.concat(matches);
   });
 };

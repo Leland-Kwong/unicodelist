@@ -15,7 +15,7 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import search from './search';
 import memoize from 'memoizee';
-import { views, getBookmarks, entityID } from './modules';
+import { views, getBookmarks } from './modules';
 import { name as pageTitle } from '../../site.config';
 
 const scrollToTop = () => {
@@ -42,25 +42,17 @@ const MatchesMeasure = (
 
 const filterFns = {
   all: (entities) => entities,
-  featured: (entities) => {
-    const featured = require('../../static/char-ref-featured.json');
-    return entities.filter(ent => {
-      const uid = entityID(ent);
-      return featured[uid];
-    });
-  },
   'most used': (entities) => {
-    const faves = getBookmarks();
+    const frequentlyUsed = getBookmarks();
     const results = entities
       .filter(ent => {
-        const uid = entityID(ent);
-        return faves[uid];
+        return frequentlyUsed[ent.hex];
       })
       .sort(function byCopyFrequency(a, b) {
-        const uidA = entityID(a);
-        const countA = faves[uidA];
-        const uidB = entityID(b);
-        const countB = faves[uidB];
+        const uidA = a.hex;
+        const countA = frequentlyUsed[uidA];
+        const uidB = b.hex;
+        const countB = frequentlyUsed[uidB];
         if (countA > countB) {
           return -1;
         }
@@ -74,21 +66,15 @@ const filterFns = {
 };
 
 function inputHandler(query, page) {
-  const { charRefData } = this.state;
-  const normalizedPage = Number(page);
-  const matches = (query.length > 0)
-    ? this.findMatches(query)
-    : charRefData;
-  const { filterBy } = this.getUrlQuery();
-  const filteredMatches = filterFns[filterBy](matches);
-  const batchSize = 80;
-  const start = page * batchSize;
-  const end = (normalizedPage + 1) * batchSize;
-  const nbPages = Math.ceil(filteredMatches.length / batchSize);
+  const {
+    matches,
+    totalMatches,
+    nbPages
+  } = this.findMatches(query, page);
   this.setState({
     // current slice of matches
-    matches: filteredMatches.slice(start, end),
-    totalMatches: filteredMatches.length,
+    matches,
+    totalMatches,
     nbPages
   });
 }
@@ -259,17 +245,7 @@ export class CharacterReference extends Component {
         return newEntity;
       });
     });
-    const charRefData = (await preparedData).sort((a, b) => {
-      if (a.hex < b.hex) {
-        return -1;
-      }
-
-      if (a.hex > b.hex) {
-        return 1;
-      }
-
-      return 0;
-    });
+    const charRefData = (await preparedData);
 
     this.search = search(charRefData);
     this.setState({
@@ -283,6 +259,7 @@ export class CharacterReference extends Component {
       // set initial query
       this.handleInput({
         value: this.props.query.query,
+        filterBy: this.props.query.filterBy,
         debounce: false,
         force: true,
         page: this.props.query.page
@@ -291,16 +268,29 @@ export class CharacterReference extends Component {
 
   }
 
-  findMatches = (query) => {
-    const start = performance.now();
+  findMatches = (query, page = 0) => {
+    const startTime = performance.now();
 
     // only trim if more than one character otherwise tab characters and &nbsp; will get trimmed
     const normalizedQuery = query.length > 1 ? query.trim() : query;
     const result = this.search(normalizedQuery);
 
-    console.log({ took: performance.now() - start });
+    const normalizedPage = Number(page);
+    const matches = result;
+    const { filterBy } = this.getUrlQuery();
+    const filteredMatches = filterFns[filterBy](matches);
+    const batchSize = 80;
+    const start = page * batchSize;
+    const end = (normalizedPage + 1) * batchSize;
+    const nbPages = Math.ceil(filteredMatches.length / batchSize);
 
-    return result;
+    console.log({ took: performance.now() - startTime });
+
+    return {
+      matches: filteredMatches.slice(start, end),
+      nbPages,
+      totalMatches: filteredMatches.length
+    };
   }
 
   isDataReady = () => {
@@ -332,9 +322,6 @@ export class CharacterReference extends Component {
     if (!force && !hasChanged) {
       return;
     }
-    // if (value !== this.getUrlQuery().query) {
-    //   updateRouteDebounced.call(this, value, filterBy, page);
-    // }
     this.setState({
       inputValue: value,
       matchesPage: Number(page),
@@ -433,7 +420,7 @@ export class CharacterReference extends Component {
             />
             <h2 className='overflow-auto nowrap'>
               <Filters
-                options={['all', 'featured', 'most used'].map(name =>
+                options={['all', 'most used'].map(name =>
                   ({ label: name, value: name }))
                 }
                 value={filterBy}
@@ -546,7 +533,7 @@ export class CharacterReference extends Component {
         {this.MainView()}
         {(this.getUrlQuery().view === views.detail)
           && this.isDataReady()
-          && this.DetailView({ metadata: this.findMatches(this.getUrlQuery().detail)[0] })}
+          && this.DetailView({ metadata: this.findMatches(this.getUrlQuery().detail).matches[0] })}
         <AppInfo />
         <div
           className={classnames(
