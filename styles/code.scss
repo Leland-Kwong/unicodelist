@@ -10,11 +10,11 @@ pre[class*="language-"] {
   font-size: .92rem;
   padding: 0 !important;
   border-radius: 0;
-  @include fullContainerWidth();
-  border: 1px solid #eee;
   border-left: 0;
   border-right: 0;
   overflow: visible;
+  color: #9C27B0;
+  background: #f3f3f3;
 
   &:before {
     @extend .bodyFont;

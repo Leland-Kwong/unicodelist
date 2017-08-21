@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Copyable } from './Copyable';
 import Router from 'next/router';
 import { views, setBookmarks, entityID } from './modules';
+import classnames from 'classnames';
 
 const basePath = '/';
 
@@ -37,6 +38,25 @@ const metadataValueTransform = (() => {
   const fns = {
     named: value => value.split(' ')[0],
     default: value => value,
+  };
+  return (key, value) => (fns[key] || fns.default)(value);
+})();
+const codeExample = (() => {
+  const fns = {
+    named: htmlEntity => {
+      const code = /* @html */`
+<div>${htmlEntity}</div>`.trim();
+      return <pre><code>{code}</code></pre>;
+    },
+    css: escapedHexCode => {
+      const code = /* @html */`
+div:before {
+  content: "${escapedHexCode}";
+}`.trim();
+      return <pre><code>{code}</code></pre>;
+    },
+    default: () => null,
+    // css:
   };
   return (key, value) => (fns[key] || fns.default)(value);
 })();
@@ -76,22 +96,38 @@ export class EntityMatch extends Component {
     const char = fields.character;
     const charDisplay = char.trim().length ? char : String.fromCharCode(nbsp);
     const uid = fields.hex;
+    const isListView = view === views.list;
+    const isDetailView = view === views.detail;
     const Category = view === views.detail && (
-      <div className='color-sub-text' style={{ fontSize: '.75rem' }}>
-        <em>{fields.category}</em>
+      <div className='color-sub-text mt3 mb4' style={{ fontSize: '.85rem' }}>
+        <div>Category: <em>{fields.category}</em></div>
+        <div>learn more about&nbsp;
+          <a href='http://www.unicode.org/versions/Unicode10.0.0/ch04.pdf#G134153'>unicode categories</a>
+        </div>
       </div>
     );
     // customized ordering of keys from `entities` object
     const entityPropsToShow = view === views.list
       ? [/* 'character' */, 'named', 'css', 'hex']
-      : ['named', 'css', 'hex', 'dec'];
+      : ['named', 'css', 'hex', 'dec', 'unicode'];
     const Header = (
       <header className='Match__Header'>
-        <div className='Match__Desc'>{description}</div>
+        {isListView &&
+          <Link
+            query={{ query: metadata.hex }}
+            className='Match__Desc'
+          >
+            {description}
+          </Link>}
+        {isDetailView && description}
       </header>
     );
     return (
-      <div className='Match'>
+      <div className={classnames({
+        'Match': isListView,
+        'Match--detail': isDetailView
+      })}
+      >
         {Header}
         <Copyable
           className='Match__Char'
@@ -109,22 +145,24 @@ export class EntityMatch extends Component {
             return (
               <div className='Match__MetadataField' key={key}>
                 <span className='Match__MetadataKey'>{keyDisplay}</span>
-                <Copyable
-                  className='Match__MetadataValue'
-                  textToCopy={valueToCopy}
-                  uid={uid}
-                  onCopy={this.handleCopy}
-                >{valueToDisplay}</Copyable>
+                <div className='Match__MetadataValue'>
+                  <Copyable
+                    textToCopy={valueToCopy}
+                    uid={uid}
+                    onCopy={this.handleCopy}
+                  >{valueToDisplay}</Copyable>
+                  {isDetailView && codeExample(key, value)}
+                </div>
               </div>
             );
           })}
         </div>
         {Category}
-        {view === views.list &&
+        {/* {view === views.list &&
           <Link
             query={{ query: metadata.hex }}
             className='f7 mt2 db tr black'
-          >more →</Link>}
+          >more →</Link>} */}
       </div>
     );
   }

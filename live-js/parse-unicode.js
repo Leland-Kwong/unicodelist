@@ -8,7 +8,7 @@ const charRefW3Hash = charRefW3.reduce((chars, entity) => {
 }, {});
 const chalk = require('chalk');
 
-// [category reference](http://www.fileformat.info/info/unicode/category/index.htm)
+// [category reference](https://en.wikipedia.org/wiki/Template:General_Category_(Unicode))
 const categories = ['Cc','Cf','Cn','Co','Cs','LC','Ll','Lm','Lo','Lt','Lu','Mc','Me','Mn','Nd','Nl','No','Pc','Pd','Pe','Pf','Pi','Po','Ps','Sc','Sk','Sm','So','Zl','Zp','Zs'];
 const categoriesFull = ['Other, Control','Other, Format','Other, Not Assigned ','Other, Private Use','Other, Surrogate','Letter, Cased','Letter, Lowercase','Letter, Modifier','Letter, Other','Letter, Titlecase','Letter, Uppercase','Mark, Spacing Combining','Mark, Enclosing','Mark, Nonspacing','Number, Decimal Digit','Number, Letter','Number, Other','Punctuation, Connector','Punctuation, Dash','Punctuation, Close','Punctuation, Final quote ','Punctuation, Initial quote ','Punctuation, Other','Punctuation, Open','Symbol, Currency','Symbol, Modifier','Symbol, Math','Symbol, Other','Separator, Line','Separator, Paragraph','Separator, Space'];
 const categoriesMapping = categories.reduce((mappings, c, i) => {

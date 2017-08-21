@@ -1,10 +1,23 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
+import { render } from 'react-dom';
 
 export class Toaster extends Component {
-  render() {
+  componentDidMount() {
+    const div = this.div = document.createElement('div');
+    div.className = 'Toaster';
+    document.body.appendChild(div);
     const { children } = this.props;
-    return (
-      <div className='Toaster'>{children}</div>
+    render(
+      children,
+      div
     );
+  }
+
+  componentWillUnmount() {
+    document.body.removeChild(this.div);
+  }
+
+  render() {
+    return null;
   }
 }

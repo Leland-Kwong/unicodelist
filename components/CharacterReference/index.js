@@ -42,7 +42,7 @@ const MatchesMeasure = (
 
 const filterFns = {
   all: (entities) => entities,
-  'most used': (entities) => {
+  'recently used': (entities) => {
     const frequentlyUsed = getBookmarks();
     const results = entities
       .filter(ent => {
@@ -203,17 +203,23 @@ export class CharacterReference extends Component {
     }
     if (changed) {
       if (nextProps.url.query.view === views.detail) {
-        document.body.style.overflow = 'hidden';
         return;
       }
 
-      document.body.style.overflow = null;
       this.handleInput({
         value: nextProps.url.query.query,
         debounce: false,
         filterBy: nextProps.url.query.filterBy,
         page: nextProps.url.query.page,
       });
+    }
+  }
+
+  componentDidUpdate() {
+    if (this.props.url.query.view === views.list) {
+      document.body.style.overflow = 'auto';
+    } else {
+      document.body.style.overflow = 'hidden';
     }
   }
 
@@ -241,7 +247,9 @@ export class CharacterReference extends Component {
           const transformFn = columnTransformations[colName] || columnTransformations.default;
           newEntity[colName] = transformFn(entity[i]);
         }
-        newEntity.css = '\\' + newEntity.hex.slice(3, -1);
+        const unicode = newEntity.hex.slice(3, -1);
+        newEntity.css = '\\' + unicode;
+        newEntity.unicode = `U+${unicode}`;
         return newEntity;
       });
     });
@@ -372,11 +380,14 @@ export class CharacterReference extends Component {
     } = this.state;
 
     const PrevNext = ({ visible = true, page, ...rest }) => {
+      const href = `/list/${filterBy}?query=${encodeURIComponent(inputValue)}&page=${page}`;
       return (
         <a
+          href={href}
           className='dib'
           style={{ visibility: visible ? 'visible' : 'hidden' }}
-          onClick={() => {
+          onClick={(ev) => {
+            ev.preventDefault();
             updateRoute(
               inputValue,
               filterBy,
@@ -420,7 +431,7 @@ export class CharacterReference extends Component {
             />
             <h2 className='overflow-auto nowrap'>
               <Filters
-                options={['all', 'most used'].map(name =>
+                options={['all', 'recently used'].map(name =>
                   ({ label: name, value: name }))
                 }
                 value={filterBy}
@@ -444,7 +455,7 @@ export class CharacterReference extends Component {
             {matches.map(match => (
               <EntityMatch
                 key={match.hex}
-                view={this.getUrlQuery().view}
+                view='list'
                 metadata={match}
                 onCopy={this.refreshList}
               />
@@ -467,11 +478,13 @@ export class CharacterReference extends Component {
         background: '#fff'
       }}
       >
-        <EntityMatch
-          metadata={metadata}
-          onCopy={this.refreshList}
-          view={this.getUrlQuery().view}
-        />
+        <div className='overflow-auto'>
+          <EntityMatch
+            metadata={metadata}
+            onCopy={this.refreshList}
+            view={this.getUrlQuery().view}
+          />
+        </div>
       </main>
     );
   }
@@ -496,6 +509,7 @@ export class CharacterReference extends Component {
                   className='mid-gray'
                   onClick={(ev) => {
                     ev.preventDefault();
+                    scrollToTop();
                     updateRoute();
                   }}
                 >{pageTitle}</a>

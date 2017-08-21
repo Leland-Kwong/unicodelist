@@ -49,6 +49,11 @@ main {
     color: #fff;
     background: $colorSecondary;
   }
+
+  [href^="http"] {
+    color: #000;
+    text-decoration: underline;
+  }
 }
 
 [data-tooltip] {
@@ -122,6 +127,31 @@ $matchTopPadding: .5rem;
   border-top: 1px solid #cecece;
 }
 
+.Match--detail {
+  max-width: 100%;
+  width: 30rem;
+  margin: 0 auto;
+
+  .Match__Char {
+    // font-size: 5rem;
+    padding-top: 0;
+    height: auto;
+  }
+
+  .Match__Desc {
+    font-size: 16px;
+    height: auto;
+  }
+
+  .Match__MetadataField {
+    font-size: 16px;
+  }
+
+  .Match__MetadataKey {
+    width: 5.5em;
+  }
+}
+
 .Match__Char {
   font-size: 3rem;
   color: #000;
@@ -165,13 +195,19 @@ $matchTopPadding: .5rem;
   color: rgb(79, 79, 79);
 }
 
+.Match__Header {
+  height: 3.4rem;
+  overflow: hidden;
+}
+
 .Match__Desc {
   font-size: 12px;
-  height: 3rem;
+  text-transform: capitalize;
   // margin-bottom: 1rem;
   // margin-right: 2.2rem;
   line-height: 1.4;
   color: #000;
+  display: block;
 }
 
 .Matches__Measure {
@@ -194,9 +230,9 @@ $matchTopPadding: .5rem;
 .Copyable {
   position: relative;
 
-  // &:hover {
-  //   z-index: 1;
-  // }
+  &:hover {
+    background: $colorPrimary;
+  }
 
   &:hover:after {
     position: absolute;
@@ -209,6 +245,7 @@ $matchTopPadding: .5rem;
     line-height: 1.6;
     padding: 0 .4rem;
     font-weight: bold;
+    pointer-events: none;
   }
 }
 
@@ -229,7 +266,7 @@ $matchTopPadding: .5rem;
 .Copyable__Tooltip {
   $width: 13rem;
   position: fixed;
-  z-index: 999;
+  z-index: 9999;
   opacity: 0;
   top: 0;
   left: 50%;

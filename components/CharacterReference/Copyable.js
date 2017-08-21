@@ -3,6 +3,7 @@ import { findDOMNode } from 'react-dom';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import Clipboard from 'clipboard';
+import { Toaster } from '../allComponents';
 
 export class Copyable extends Component {
   static propTypes = {
@@ -55,10 +56,12 @@ export class Copyable extends Component {
       >
         {children}
         {justCopied &&
-          <div className={classnames('Copyable__Tooltip')}>
-            <strong className='Copyable__TooltipTextToCopy'>{textToCopy}</strong>
-            <div className='Copyable__TooltipTitle'>copied to clipboard</div>
-          </div>}
+          <Toaster>
+            <div className={classnames('Copyable__Tooltip')}>
+              <strong className='Copyable__TooltipTextToCopy'>{textToCopy}</strong>
+              <div className='Copyable__TooltipTitle'>copied to clipboard</div>
+            </div>
+          </Toaster>}
       </a>
     );
   }

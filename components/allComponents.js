@@ -7,3 +7,4 @@ export { GoogleAds } from './GoogleAds';
 export { GoogleAnalytics } from './GoogleAnalytics';
 export { CharacterReference } from './CharacterReference/index';
 export { Main } from './Main';
+export { Toaster } from './Toaster';
