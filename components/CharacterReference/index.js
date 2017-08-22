@@ -3,7 +3,6 @@ import {
   Input,
   Icon,
   LoadingIndicator,
-  GoogleAds,
   GoogleAnalytics,
   Main,
 } from '../allComponents';
@@ -564,7 +563,6 @@ export class CharacterReference extends Component {
           <LoadingIndicator style={{ marginTop: '-4rem' }} />
           <h4>{loadingStates[this.state.loadingState]}</h4>
         </div>
-        <GoogleAds />
         <GoogleAnalytics />
       </Main>
     );
