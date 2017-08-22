@@ -45,12 +45,12 @@ const codeExample = (() => {
   const fns = {
     named: htmlEntity => {
       const code = /* @html */`
-<div>${htmlEntity}</div>`.trim();
+<span>${htmlEntity}</span>`.trim();
       return <pre><code>{code}</code></pre>;
     },
     css: escapedHexCode => {
       const code = /* @html */`
-div:before {
+span:before {
   content: "${escapedHexCode}";
 }`.trim();
       return <pre><code>{code}</code></pre>;
@@ -91,7 +91,7 @@ export class EntityMatch extends Component {
 
   render() {
     const { metadata, view } = this.props;
-    const { desc: description, ...fields } = metadata;
+    const { desc, ...fields } = metadata;
     const nbsp = 0x000A0;
     const char = fields.character;
     const charDisplay = char.trim().length ? char : String.fromCharCode(nbsp);
@@ -110,31 +110,30 @@ export class EntityMatch extends Component {
     const entityPropsToShow = view === views.list
       ? [/* 'character' */, 'named', 'css', 'hex']
       : ['named', 'css', 'hex', 'dec', 'unicode'];
-    const Header = (
-      <header className='Match__Header'>
+    const Description = (
+      <h5 className='Match__Header Match__Desc'>
         {isListView &&
           <Link
+            className='db black'
             query={{ query: metadata.hex }}
-            className='Match__Desc'
-          >
-            {description}
-          </Link>}
-        {isDetailView && description}
-      </header>
+          >{desc}</Link>}
+        {isDetailView && desc}
+      </h5>
     );
     return (
       <div className={classnames({
         'Match': isListView,
-        'Match--detail': isDetailView
+        'Match--detail container-full-width': isDetailView
       })}
       >
-        {Header}
+        {isDetailView && Description}
         <Copyable
           className='Match__Char'
           textToCopy={char}
           uid={uid}
           onCopy={this.handleCopy}
         >{charDisplay}</Copyable>
+        {isListView && Description}
         <div className='Match__Metadata'>
           {entityPropsToShow.map(key => {
             const value = fields[key];

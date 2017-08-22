@@ -1,1 +1,1 @@
-export { CharacterReference } from './allComponents';
+export * from './allComponents';

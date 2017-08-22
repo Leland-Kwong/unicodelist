@@ -33,7 +33,7 @@ const updateRoute = function(value = '', filterBy = 'all', page = 0) {
   Router.push(href, as, { shallow: true });
 };
 
-const updateRouteDebounced = debounce(updateRoute, 200);
+const updateRouteDebounced = debounce(updateRoute, 300);
 
 const MatchesMeasure = (
   /* these are hidden placeholder elements used to measure the size of the element */
@@ -423,12 +423,6 @@ export class CharacterReference extends Component {
       <main>
         <div className='container-full-width'>
           <div>
-            <ExampleSearches
-              onClick={(query) => {
-                const { filterBy } = this.getUrlQuery();
-                updateRoute(query, filterBy);
-              }}
-            />
             <h2 className='overflow-auto nowrap'>
               <Filters
                 options={['all', 'recently used'].map(name =>
@@ -436,11 +430,18 @@ export class CharacterReference extends Component {
                 }
                 value={filterBy}
                 onClick={(filterBy) => {
-                  const query = this.getUrlQuery();
-                  updateRoute(query.query, filterBy);
+                  updateRoute('', filterBy);
                 }}
               />
             </h2>
+            {filterBy === 'all'
+              &&
+              <ExampleSearches
+                onClick={(query) => {
+                  const { filterBy } = this.getUrlQuery();
+                  updateRoute(query, filterBy);
+                }}
+              />}
           </div>
         </div>
         <div className='container-full-width'>
@@ -471,6 +472,7 @@ export class CharacterReference extends Component {
     return (
       <main style={{
         position: 'fixed',
+        zIndex: 1,
         top: 0,
         left: 0,
         right: 0,
@@ -506,7 +508,7 @@ export class CharacterReference extends Component {
               <h1 className='App__Title'>
                 <a
                   href={basePath}
-                  className='mid-gray'
+                  className='mid-gray b'
                   onClick={(ev) => {
                     ev.preventDefault();
                     scrollToTop();
@@ -515,9 +517,9 @@ export class CharacterReference extends Component {
                 >{pageTitle}</a>
               </h1>
             </div>
-            <div>
+            <div className='AppHeader__InfoLinks'>
               <a className='grid' href='mailto:leland.kwong@gmail.com' target='_blank'>
-                <Icon name='mail3' />&nbsp;<span>send feedback</span>
+                <Icon name='mail3' />&nbsp;<span>bug reports & feedback</span>
               </a>
             </div>
           </div>

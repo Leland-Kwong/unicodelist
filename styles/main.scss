@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Bitter:700|Montserrat:400,400i,600');
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400,600');
 
 $font-family-sans-serif:
   // Safari for OS X and iOS (San Francisco)
@@ -13,11 +13,6 @@ $font-family-sans-serif:
   "Roboto",
   // Basic web fallback
   "Helvetica Neue", Arial, sans-serif !default;
-
-.titleFont {
-  font-family: 'Bitter', sans-serif;
-  font-weight: 700;
-}
 
 .bodyFont {
   font-family: 'Montserrat', $font-family-sans-serif;
@@ -80,15 +75,9 @@ a {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  @extend .titleFont;
-  line-height: 1.2;
   margin-top: 0;
   margin-bottom: 1rem;
   color: $headingFontColor;
-
-  a {
-    @extend .titleFont;
-  }
 }
 
 h1 {
@@ -211,10 +200,4 @@ img {
   &:before {
     content: "#";
   }
-}
-
-.MiniDivider {
-  width: 2rem;
-  border-bottom: 3px solid currentColor;
-  margin-bottom: 2rem;
 }

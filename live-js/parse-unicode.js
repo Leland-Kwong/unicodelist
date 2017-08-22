@@ -65,14 +65,12 @@ const dataset = {
   mappings: normalizedCharRefW3
     .concat(
       unicodeOrgList.filter(entity => entity[5].match(/Sc|Sm/))
-    )
+    ).map(ent => {
+      // change `named` column to show only the first value
+      ent[3] = ent[3].split(' ')[0];
+      return ent;
+    })
 };
-
-console.log(
-  dataset.mappings.find(entity => {
-    return entity[2] === '“';
-  })
-);
 
 fs.writeFile('./static/char-ref-full.json',
   JSON.stringify(dataset),
