@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 43.2 (39069) - http://www.bohemiancoding.com/sketch -->
+    <title>faviconlogo</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="background" fill="#EDEDED" x="-30" y="-22" width="59" height="48"></rect>
+        <g id="favicon">
+            <path d="M11,9 C11,10.6568542 9.65685425,12 8,12 C6.34314575,12 5,10.6568542 5,9 L5,4 L7,4 L7,7.58535285 L7,9 C7,9.55228475 7.44771525,10 8,10 C8.55228475,10 9,9.55228475 9,9 L9,7.58535285 L9,4 L11,4 L11,9 Z" id="Combined-Shape" fill="#000000"></path>
+            <rect id="Rectangle" fill="#18B3A4" x="0" y="0" width="16" height="16" rx="2"></rect>
+            <path d="M8,12 C10.209139,12 12,10.209139 12,8 C12,5.790861 10.209139,4 8,4 C5.790861,4 4,5.790861 4,8 C4,10.209139 5.790861,12 8,12 Z M8,14 C4.6862915,14 2,11.3137085 2,8 C2,4.6862915 4.6862915,2 8,2 C11.3137085,2 14,4.6862915 14,8 C14,11.3137085 11.3137085,14 8,14 Z" id="Oval" fill="#FFFFFF" fill-rule="nonzero"></path>
+            <circle id="Oval-4" fill="#FFFFFF" cx="8" cy="8" r="2"></circle>
+        </g>
+    </g>
+</svg>

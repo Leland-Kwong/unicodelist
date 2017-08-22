@@ -14,20 +14,3 @@ Single-colored icons can be modified like so:
   color: red;
 }
 ========================================== */
-
-.icon-logo {
-  font-size: 32px;
-  color: currentColor;
-}
-
-.icon-arrow-left {
-  &:before {
-    content: "←"
-  }
-}
-
-.icon-arrow-right {
-  &:before {
-    content: "→"
-  }
-}

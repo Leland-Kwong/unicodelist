@@ -508,13 +508,13 @@ export class CharacterReference extends Component {
               <h1 className='App__Title'>
                 <a
                   href={basePath}
-                  className='mid-gray b'
+                  className='mid-gray b flex items-center'
                   onClick={(ev) => {
                     ev.preventDefault();
                     scrollToTop();
                     updateRoute();
                   }}
-                >{pageTitle}</a>
+                ><Icon name='logo' className='mr1' /><span>{pageTitle}</span></a>
               </h1>
             </div>
             <div className='AppHeader__InfoLinks'>

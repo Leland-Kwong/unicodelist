@@ -9,11 +9,11 @@
 @import "./node_modules/tachyons/src/_skins";
 @import "./node_modules/tachyons/src/_colors";
 @import "./node_modules/tachyons/src/_font-weight";
+@import "./node_modules/tachyons/src/_flexbox";
 
-$colorPrimary: #22b77c;
-$colorPrimaryUltraLight: #f9fff7;
+$colorPrimary: #18b3a4;
+$colorPrimaryUltraLight: #f8fff7;
 $AppHeaderHeight: 4.5rem;
-$mainBg: #fffffc;
 $itemWidth: 6rem;
 
 h1 {
@@ -45,7 +45,6 @@ main {
   padding-top: calc(#{$AppHeaderHeight} + 1rem);
   display: flex;
   flex-direction: column;
-  background: $mainBg;
 
   a:hover {
     color: #fff;
@@ -169,7 +168,7 @@ $matchTopPadding: .5rem;
   font-size: 14px;
   display: flex;
   align-items: baseline;
-  line-height: 1.4;
+  // line-height: 1.4;
 }
 
 .Match .Match__MetadataValue {
@@ -429,7 +428,7 @@ $matchTopPadding: .5rem;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: $mainBg;
+  background: $baseBackgroundColor;
   transition: all .4s ease-out;
   opacity: 0;
   visibility: hidden;
