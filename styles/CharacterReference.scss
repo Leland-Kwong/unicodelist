@@ -8,10 +8,12 @@
 @import "../node_modules/tachyons/src/_spacing";
 @import "./node_modules/tachyons/src/_skins";
 @import "./node_modules/tachyons/src/_colors";
+@import "./node_modules/tachyons/src/_font-weight";
+@import "./node_modules/tachyons/src/_flexbox";
 
-$colorPrimary: #4CAF50;
+$colorPrimary: #18b3a4;
+$colorPrimaryUltraLight: #f8fff7;
 $AppHeaderHeight: 4.5rem;
-$mainBg: #fffffc;
 $itemWidth: 6rem;
 
 h1 {
@@ -43,11 +45,15 @@ main {
   padding-top: calc(#{$AppHeaderHeight} + 1rem);
   display: flex;
   flex-direction: column;
-  background: $mainBg;
 
   a:hover {
     color: #fff;
     background: $colorSecondary;
+  }
+
+  [href^="http"] {
+    color: #000;
+    text-decoration: underline;
   }
 }
 
@@ -113,13 +119,38 @@ main {
 .Matches__Measure,
 .Match {
   min-width: 0;
-  margin: 1rem 0 3rem 1rem;
+  margin: 1rem 0 2rem .5rem;
 }
 
 $matchTopPadding: .5rem;
 .Match {
-  position: relative;
-  border-top: 1px solid #cecece;
+  // position: relative;
+  // border-top: 1px solid #cecece;
+}
+
+.Match--detail {
+  max-width: 100%;
+  width: 30rem;
+  margin: 0 auto;
+
+  .Match__Char {
+    // font-size: 5rem;
+    padding-top: 0;
+    height: auto;
+  }
+
+  .Match__Desc {
+    font-size: 18px;
+    height: auto;
+  }
+
+  .Match__MetadataField {
+    font-size: 16px;
+  }
+
+  .Match__MetadataKey {
+    width: 5.5em;
+  }
 }
 
 .Match__Char {
@@ -133,25 +164,29 @@ $matchTopPadding: .5rem;
   padding-top: 1.5rem;
 }
 
-.Match__Header {
-  padding-top: $matchTopPadding;
-}
-
 .Match__MetadataField {
   font-size: 14px;
   display: flex;
   align-items: baseline;
-  line-height: 1.4;
+  // line-height: 1.4;
 }
 
-.Match__MetadataValue {
-  font-weight: normal;
-  flex: 1 1 auto;
+.Match .Match__MetadataValue {
+  &:hover {
+    position: relative;
+    z-index: 1;
+  }
 
   &:not(:hover) {
     overflow: hidden;
     text-overflow: ellipsis;
   }
+}
+
+.Match__MetadataValue {
+  font-weight: normal;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .Match__MetadataKey {
@@ -162,16 +197,28 @@ $matchTopPadding: .5rem;
   text-transform: uppercase;
   letter-spacing: .03rem;
   flex-shrink: 0;
-  color: rgb(79, 79, 79);
+  color: #949494;
+}
+
+.Match__Header {
+  margin: $matchTopPadding 0;
+  height: 3.3rem;
+  font-weight: normal;
+  overflow: hidden;
+
+  &:hover {
+    overflow: visible;
+    position: relative;
+    z-index: 1;
+  }
 }
 
 .Match__Desc {
-  font-size: 12px;
-  height: 3rem;
-  // margin-bottom: 1rem;
-  // margin-right: 2.2rem;
+  font-size: 13px;
+  text-transform: capitalize;
   line-height: 1.4;
   color: #000;
+  display: block;
 }
 
 .Matches__Measure {
@@ -193,10 +240,14 @@ $matchTopPadding: .5rem;
 
 .Copyable {
   position: relative;
+  background: $colorPrimaryUltraLight;
+  border-radius: 3px;
+  margin: 4px 0;
+  box-shadow: 0 0 1px rgba(0,0,0,.15);
 
-  // &:hover {
-  //   z-index: 1;
-  // }
+  &:hover {
+    background: $colorPrimary;
+  }
 
   &:hover:after {
     position: absolute;
@@ -209,6 +260,7 @@ $matchTopPadding: .5rem;
     line-height: 1.6;
     padding: 0 .4rem;
     font-weight: bold;
+    pointer-events: none;
   }
 }
 
@@ -229,7 +281,7 @@ $matchTopPadding: .5rem;
 .Copyable__Tooltip {
   $width: 13rem;
   position: fixed;
-  z-index: 999;
+  z-index: 9999;
   opacity: 0;
   top: 0;
   left: 50%;
@@ -280,12 +332,14 @@ $matchTopPadding: .5rem;
   // background: #555;
   // color: #e0e0e0;
   line-height: 2.2rem;
+   a {
+     font-size: .8rem;
+   }
+}
 
-  a {
-    font-weight: normal;
-    line-height: 2rem;
-    font-size: .8rem;
-  }
+.AppHeader__InfoLinks {
+  font-weight: normal;
+  line-height: 2rem;
 }
 
 .AppHeader__Controls {}
@@ -374,7 +428,7 @@ $matchTopPadding: .5rem;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: $mainBg;
+  background: $baseBackgroundColor;
   transition: all .4s ease-out;
   opacity: 0;
   visibility: hidden;
@@ -392,8 +446,7 @@ $matchTopPadding: .5rem;
   font-size: 1.3rem;
 
   .Filter__Toggle {
-    padding: 0 0 .5rem;
-    box-shadow: none;
+    padding: 0 0 .2rem;
     font-weight: inherit;
     margin-right: 1.5rem;
     font-family: inherit;

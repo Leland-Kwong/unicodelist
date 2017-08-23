@@ -6,8 +6,9 @@ const charRefW3Hash = charRefW3.reduce((chars, entity) => {
   chars[entity.character] = entity;
   return chars;
 }, {});
+const chalk = require('chalk');
 
-// [category reference](http://www.fileformat.info/info/unicode/category/index.htm)
+// [category reference](https://en.wikipedia.org/wiki/Template:General_Category_(Unicode))
 const categories = ['Cc','Cf','Cn','Co','Cs','LC','Ll','Lm','Lo','Lt','Lu','Mc','Me','Mn','Nd','Nl','No','Pc','Pd','Pe','Pf','Pi','Po','Ps','Sc','Sk','Sm','So','Zl','Zp','Zs'];
 const categoriesFull = ['Other, Control','Other, Format','Other, Not Assigned ','Other, Private Use','Other, Surrogate','Letter, Cased','Letter, Lowercase','Letter, Modifier','Letter, Other','Letter, Titlecase','Letter, Uppercase','Mark, Spacing Combining','Mark, Enclosing','Mark, Nonspacing','Number, Decimal Digit','Number, Letter','Number, Other','Punctuation, Connector','Punctuation, Dash','Punctuation, Close','Punctuation, Final quote ','Punctuation, Initial quote ','Punctuation, Other','Punctuation, Open','Symbol, Currency','Symbol, Modifier','Symbol, Math','Symbol, Other','Separator, Line','Separator, Paragraph','Separator, Space'];
 const categoriesMapping = categories.reduce((mappings, c, i) => {
@@ -33,7 +34,7 @@ const unicodeOrgList = categories.map(cat => {
       category
     } = charsByUnicode[k];
     return [
-      '&#' + hex,
+      '&#x' + hex + ';',
       desc.toLowerCase(),
       character,
       // named
@@ -64,14 +65,12 @@ const dataset = {
   mappings: normalizedCharRefW3
     .concat(
       unicodeOrgList.filter(entity => entity[5].match(/Sc|Sm/))
-    )
+    ).map(ent => {
+      // change `named` column to show only the first value
+      ent[3] = ent[3].split(' ')[0];
+      return ent;
+    })
 };
-
-console.log(
-  dataset.mappings.find(entity => {
-    return entity[2] === '“';
-  })
-);
 
 fs.writeFile('./static/char-ref-full.json',
   JSON.stringify(dataset),
@@ -80,6 +79,9 @@ fs.writeFile('./static/char-ref-full.json',
       console.log(err);
       return;
     }
-    console.log('char-ref-full.json created');
+    console.log(
+      `${new Date().toISOString()}`,
+      chalk.green('char-ref-full.json created')
+    );
   }
 );

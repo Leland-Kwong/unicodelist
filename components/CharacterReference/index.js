@@ -3,7 +3,6 @@ import {
   Input,
   Icon,
   LoadingIndicator,
-  GoogleAds,
   GoogleAnalytics,
   Main,
 } from '../allComponents';
@@ -15,7 +14,7 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import search from './search';
 import memoize from 'memoizee';
-import { views, getBookmarks, entityID } from './modules';
+import { views, getBookmarks } from './modules';
 import { name as pageTitle } from '../../site.config';
 
 const scrollToTop = () => {
@@ -33,7 +32,7 @@ const updateRoute = function(value = '', filterBy = 'all', page = 0) {
   Router.push(href, as, { shallow: true });
 };
 
-const updateRouteDebounced = debounce(updateRoute, 200);
+const updateRouteDebounced = debounce(updateRoute, 300);
 
 const MatchesMeasure = (
   /* these are hidden placeholder elements used to measure the size of the element */
@@ -42,25 +41,17 @@ const MatchesMeasure = (
 
 const filterFns = {
   all: (entities) => entities,
-  featured: (entities) => {
-    const featured = require('../../static/char-ref-featured.json');
-    return entities.filter(ent => {
-      const uid = entityID(ent);
-      return featured[uid];
-    });
-  },
-  'most used': (entities) => {
-    const faves = getBookmarks();
+  'recently used': (entities) => {
+    const frequentlyUsed = getBookmarks();
     const results = entities
       .filter(ent => {
-        const uid = entityID(ent);
-        return faves[uid];
+        return frequentlyUsed[ent.hex];
       })
       .sort(function byCopyFrequency(a, b) {
-        const uidA = entityID(a);
-        const countA = faves[uidA];
-        const uidB = entityID(b);
-        const countB = faves[uidB];
+        const uidA = a.hex;
+        const countA = frequentlyUsed[uidA];
+        const uidB = b.hex;
+        const countB = frequentlyUsed[uidB];
         if (countA > countB) {
           return -1;
         }
@@ -74,21 +65,15 @@ const filterFns = {
 };
 
 function inputHandler(query, page) {
-  const { charRefData } = this.state;
-  const normalizedPage = Number(page);
-  const matches = (query.length > 0)
-    ? this.findMatches(query)
-    : charRefData;
-  const { filterBy } = this.getUrlQuery();
-  const filteredMatches = filterFns[filterBy](matches);
-  const batchSize = 80;
-  const start = page * batchSize;
-  const end = (normalizedPage + 1) * batchSize;
-  const nbPages = Math.ceil(filteredMatches.length / batchSize);
+  const {
+    matches,
+    totalMatches,
+    nbPages
+  } = this.findMatches(query, page);
   this.setState({
     // current slice of matches
-    matches: filteredMatches.slice(start, end),
-    totalMatches: filteredMatches.length,
+    matches,
+    totalMatches,
     nbPages
   });
 }
@@ -217,17 +202,23 @@ export class CharacterReference extends Component {
     }
     if (changed) {
       if (nextProps.url.query.view === views.detail) {
-        document.body.style.overflow = 'hidden';
         return;
       }
 
-      document.body.style.overflow = null;
       this.handleInput({
         value: nextProps.url.query.query,
         debounce: false,
         filterBy: nextProps.url.query.filterBy,
         page: nextProps.url.query.page,
       });
+    }
+  }
+
+  componentDidUpdate() {
+    if (this.props.url.query.view === views.list) {
+      document.body.style.overflow = 'auto';
+    } else {
+      document.body.style.overflow = 'hidden';
     }
   }
 
@@ -255,21 +246,13 @@ export class CharacterReference extends Component {
           const transformFn = columnTransformations[colName] || columnTransformations.default;
           newEntity[colName] = transformFn(entity[i]);
         }
-        newEntity.css = '\\' + newEntity.hex.slice(3, -1);
+        const unicode = newEntity.hex.slice(3, -1);
+        newEntity.css = '\\' + unicode;
+        newEntity.unicode = `U+${unicode}`;
         return newEntity;
       });
     });
-    const charRefData = (await preparedData).sort((a, b) => {
-      if (a.hex < b.hex) {
-        return -1;
-      }
-
-      if (a.hex > b.hex) {
-        return 1;
-      }
-
-      return 0;
-    });
+    const charRefData = (await preparedData);
 
     this.search = search(charRefData);
     this.setState({
@@ -283,6 +266,7 @@ export class CharacterReference extends Component {
       // set initial query
       this.handleInput({
         value: this.props.query.query,
+        filterBy: this.props.query.filterBy,
         debounce: false,
         force: true,
         page: this.props.query.page
@@ -291,16 +275,29 @@ export class CharacterReference extends Component {
 
   }
 
-  findMatches = (query) => {
-    const start = performance.now();
+  findMatches = (query, page = 0) => {
+    const startTime = performance.now();
 
     // only trim if more than one character otherwise tab characters and &nbsp; will get trimmed
     const normalizedQuery = query.length > 1 ? query.trim() : query;
     const result = this.search(normalizedQuery);
 
-    console.log({ took: performance.now() - start });
+    const normalizedPage = Number(page);
+    const matches = result;
+    const { filterBy } = this.getUrlQuery();
+    const filteredMatches = filterFns[filterBy](matches);
+    const batchSize = 80;
+    const start = page * batchSize;
+    const end = (normalizedPage + 1) * batchSize;
+    const nbPages = Math.ceil(filteredMatches.length / batchSize);
 
-    return result;
+    console.log({ took: performance.now() - startTime });
+
+    return {
+      matches: filteredMatches.slice(start, end),
+      nbPages,
+      totalMatches: filteredMatches.length
+    };
   }
 
   isDataReady = () => {
@@ -332,9 +329,6 @@ export class CharacterReference extends Component {
     if (!force && !hasChanged) {
       return;
     }
-    // if (value !== this.getUrlQuery().query) {
-    //   updateRouteDebounced.call(this, value, filterBy, page);
-    // }
     this.setState({
       inputValue: value,
       matchesPage: Number(page),
@@ -385,11 +379,14 @@ export class CharacterReference extends Component {
     } = this.state;
 
     const PrevNext = ({ visible = true, page, ...rest }) => {
+      const href = `/list/${filterBy}?query=${encodeURIComponent(inputValue)}&page=${page}`;
       return (
         <a
+          href={href}
           className='dib'
           style={{ visibility: visible ? 'visible' : 'hidden' }}
-          onClick={() => {
+          onClick={(ev) => {
+            ev.preventDefault();
             updateRoute(
               inputValue,
               filterBy,
@@ -425,24 +422,25 @@ export class CharacterReference extends Component {
       <main>
         <div className='container-full-width'>
           <div>
-            <ExampleSearches
-              onClick={(query) => {
-                const { filterBy } = this.getUrlQuery();
-                updateRoute(query, filterBy);
-              }}
-            />
             <h2 className='overflow-auto nowrap'>
               <Filters
-                options={['all', 'featured', 'most used'].map(name =>
+                options={['all', 'recently used'].map(name =>
                   ({ label: name, value: name }))
                 }
                 value={filterBy}
                 onClick={(filterBy) => {
-                  const query = this.getUrlQuery();
-                  updateRoute(query.query, filterBy);
+                  updateRoute('', filterBy);
                 }}
               />
             </h2>
+            {filterBy === 'all'
+              &&
+              <ExampleSearches
+                onClick={(query) => {
+                  const { filterBy } = this.getUrlQuery();
+                  updateRoute(query, filterBy);
+                }}
+              />}
           </div>
         </div>
         <div className='container-full-width'>
@@ -457,7 +455,7 @@ export class CharacterReference extends Component {
             {matches.map(match => (
               <EntityMatch
                 key={match.hex}
-                view={this.getUrlQuery().view}
+                view='list'
                 metadata={match}
                 onCopy={this.refreshList}
               />
@@ -473,6 +471,7 @@ export class CharacterReference extends Component {
     return (
       <main style={{
         position: 'fixed',
+        zIndex: 1,
         top: 0,
         left: 0,
         right: 0,
@@ -480,11 +479,13 @@ export class CharacterReference extends Component {
         background: '#fff'
       }}
       >
-        <EntityMatch
-          metadata={metadata}
-          onCopy={this.refreshList}
-          view={this.getUrlQuery().view}
-        />
+        <div className='overflow-auto'>
+          <EntityMatch
+            metadata={metadata}
+            onCopy={this.refreshList}
+            view={this.getUrlQuery().view}
+          />
+        </div>
       </main>
     );
   }
@@ -506,17 +507,18 @@ export class CharacterReference extends Component {
               <h1 className='App__Title'>
                 <a
                   href={basePath}
-                  className='mid-gray'
+                  className='mid-gray b flex items-center'
                   onClick={(ev) => {
                     ev.preventDefault();
+                    scrollToTop();
                     updateRoute();
                   }}
-                >{pageTitle}</a>
+                ><Icon name='logo' className='mr1' /><span>{pageTitle}</span></a>
               </h1>
             </div>
-            <div>
+            <div className='AppHeader__InfoLinks'>
               <a className='grid' href='mailto:leland.kwong@gmail.com' target='_blank'>
-                <Icon name='mail3' />&nbsp;<span>send feedback</span>
+                <Icon name='mail3' />&nbsp;<span>bug reports & feedback</span>
               </a>
             </div>
           </div>
@@ -546,7 +548,7 @@ export class CharacterReference extends Component {
         {this.MainView()}
         {(this.getUrlQuery().view === views.detail)
           && this.isDataReady()
-          && this.DetailView({ metadata: this.findMatches(this.getUrlQuery().detail)[0] })}
+          && this.DetailView({ metadata: this.findMatches(this.getUrlQuery().detail).matches[0] })}
         <AppInfo />
         <div
           className={classnames(
@@ -561,7 +563,6 @@ export class CharacterReference extends Component {
           <LoadingIndicator style={{ marginTop: '-4rem' }} />
           <h4>{loadingStates[this.state.loadingState]}</h4>
         </div>
-        <GoogleAds />
         <GoogleAnalytics />
       </Main>
     );

@@ -4,9 +4,9 @@ import stringHash from 'string-hash';
 export const entityID = (entityMetadata) => stringHash(entityMetadata.hex);
 
 export const getBookmarks = () => ls.get('copyHistory') || {};
-export const setBookmarks = (entityID) => {
+export const setBookmarks = (hexCode) => {
   const bookmarks = getBookmarks();
-  bookmarks[entityID] = (bookmarks[entityID] || 0) + 1;
+  bookmarks[hexCode] = (bookmarks[hexCode] || 0) + 1;
   ls.set('copyHistory', bookmarks);
 };
 

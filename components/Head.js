@@ -3,7 +3,7 @@ import NextHead from 'next/head';
 import siteConfig from '../site.config';
 import styles from '../styles/index.scss';
 
-const iconVersion = '?v4';
+const iconVersion = '?v3';
 
 export const Head = ({ title }) => {
   const { name: siteName, description } = siteConfig;
@@ -20,9 +20,9 @@ export const Head = ({ title }) => {
         href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css'
         // href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-dark.min.css'
       />
-      <link rel='icon' type='image/png' href={`/static/icons/favicon-16x16.png${iconVersion}`} sizes='16x16' />
-      <link rel='icon' type='image/png' href={`/static/icons/favicon-32x32.png${iconVersion}`} sizes='32x32' />
-      <link rel='icon' type='image/png' href={`/static/icons/favicon-96x96.png${iconVersion}`} sizes='96x96' />
+      <link rel='icon' type='image/png' href={`/static/favicons/favicon-16x16.png${iconVersion}`} sizes='16x16' />
+      <link rel='icon' type='image/png' href={`/static/favicons/favicon-32x32.png${iconVersion}`} sizes='32x32' />
+      <link rel='icon' type='image/png' href={`/static/favicons/favicon-96x96.png${iconVersion}`} sizes='96x96' />
     </NextHead>
   );
 };
