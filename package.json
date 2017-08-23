@@ -15,8 +15,7 @@
     "start": "NODE_ENV=production node server/server.js",
     "lint": "eslint",
     "lintFix": "eslint --fix",
-    "test": "ava",
-    "cleanupAlgoliaIndices": "node node_modules/site-kit/src/index.js cleanup"
+    "test": "ava"
   },
   "author": "Leland Kwong",
   "devDependencies": {

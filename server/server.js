@@ -95,6 +95,13 @@ function startApp() {
     app.render(req, res, '/', queryToSend);
   };
 
+  const googleSearchVerificationFile = 'google6f87e86940b3fcab.html';
+  server.get(`/${googleSearchVerificationFile}`, async (req, res) => {
+    const content = await promisify(fs.readFile)(`./${googleSearchVerificationFile}`, 'utf-8')
+      .catch(err => err);
+    res.send(content);
+  });
+
   server.get([
     '/detail',
     '/detail/:detail'
@@ -108,13 +115,6 @@ function startApp() {
     '/list/:filterBy',
   ], (req, res) => {
     getFn(req, res, req.query, { view: 'list', filterBy: req.params.filterBy });
-  });
-
-  const googleSearchVerificationFile = 'google6f87e86940b3fcab.html';
-  server.get(`/${googleSearchVerificationFile}`, async (req, res) => {
-    const content = await promisify(fs.readFile)(`./${googleSearchVerificationFile}`, 'utf-8')
-      .catch(err => err);
-    res.send(content);
   });
 
   server.get('*', (req, res) => {
