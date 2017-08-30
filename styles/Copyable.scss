@@ -1,0 +1,78 @@
+.Copyable {
+  background: $colorPrimaryUltraLight;
+  border-radius: 3px;
+  margin: 0 0 4px;
+  box-shadow: 0 .5px 2px rgba(0,0,0,.2);
+  transition: transform .12s;
+  display: block;
+
+  &:not(:hover) {
+    min-width: 0;
+  }
+
+  &:hover {
+    position: relative;
+    z-index: 1;
+    background: $colorPrimary;
+    transform: scale(1.02);
+  }
+
+  &:hover:after {
+    position: absolute;
+    right: 0;
+    bottom: 100%;
+    content: 'copy';
+    background: #555;
+    color: #fff;
+    font-size: .8rem;
+    line-height: 1.6;
+    padding: 0 .4rem;
+    font-weight: bold;
+    pointer-events: none;
+  }
+}
+
+@keyframes showCopyable__Tooltip {
+  0% {
+    opacity: 0;
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  88% {
+    opacity: 1;
+  }
+}
+
+.Copyable__Tooltip {
+  $width: 13rem;
+  position: fixed;
+  z-index: 9999;
+  opacity: 0;
+  top: 0;
+  left: 50%;
+  max-width: 100%;
+  transform: translateX(-50%);
+  background: #444;
+  color: #fff;
+  text-align: center;
+  animation: showCopyable__Tooltip 1.4s ease-in;
+  font-weight: normal;
+  text-transform: none;
+}
+
+.Copyable__TooltipTextToCopy {
+  padding: .5rem 1rem;
+  display: block;
+  background: #000;
+  font-size: 3rem;
+}
+
+.Copyable__TooltipTitle {
+  position: relative;
+  line-height: 2.5;
+  padding: 0 1em;
+  font-size: .8rem;
+}

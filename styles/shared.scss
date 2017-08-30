@@ -7,6 +7,10 @@ $medWidth: 60rem;
 $maxWidth: 45rem;
 $mainContentPaddingSmall: 1.4rem;
 $mainContentPaddingLarge: 2.5rem;
+$colorPrimary: #18b3a4;
+$colorPrimaryUltraLight: #f8fff7;
+$AppHeaderHeight: 4.5rem;
+$itemWidth: 6rem;
 
 @mixin fullContainerSidePadding() {
   padding-left: $mainContentPaddingLarge;
