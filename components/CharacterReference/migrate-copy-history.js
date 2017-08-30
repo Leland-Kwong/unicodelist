@@ -1,4 +1,4 @@
-import { getBookmarks } from './modules';
+import { getBookmarks, version } from './modules';
 import ls from 'local-storage';
 
 const padHexCode = (hex = String) => {
@@ -19,12 +19,12 @@ const padHexCode = (hex = String) => {
 */
 export const migrateCopyHistory = () => {
   const frequentlyUsed = getBookmarks();
-  if (frequentlyUsed.version > '1.0.0') {
+  if (frequentlyUsed.__version__ > '1.0.0') {
     return;
   }
   const newHistory = Object.keys(frequentlyUsed).reduce((newBookmarks, key) => {
-    if (key === 'version') {
-      newBookmarks.version = frequentlyUsed.version;
+    if (key === '__version__') {
+      newBookmarks.__version__ = version();
       return newBookmarks;
     }
     const oHexCode = key;

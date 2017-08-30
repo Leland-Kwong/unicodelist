@@ -4,7 +4,14 @@ import { Icon } from './allComponents';
 const defaultRefFn = () => {};
 export class Input extends Component {
   render() {
-    const { className, label, inputRef = defaultRefFn, type, ...rest } = this.props;
+    const {
+      className,
+      containerClassName,
+      label,
+      inputRef = defaultRefFn,
+      type,
+      ...rest
+    } = this.props;
     const SearchIcon = type === 'search'
       ? <Icon name='search' className='Input__SearchIcon' />
       : null;
@@ -12,7 +19,7 @@ export class Input extends Component {
       <div>
         {typeof label !== 'undefined'
         && <label>{label}</label>}
-        <div className='Input__Container'>
+        <div className={`Input__Container ${containerClassName}`}>
           {SearchIcon}
           <input
             type={type}

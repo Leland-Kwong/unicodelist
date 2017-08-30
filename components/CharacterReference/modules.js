@@ -6,11 +6,11 @@ export const version = () => window.__appVersion__;
 export const getBookmarks = () => {
   const history =
     ls.get('copyHistory')
-    || { version: window.__appVersion__ };
+    || { __version__: version() };
   // this is for the initial version of our app where there was no
   // version set for the history
-  if (!history.version) {
-    history.version = '1.0.0';
+  if (!history.__version__) {
+    history.__version__ = '1.0.0';
     ls.set('copyHistory', history);
   }
   return history;

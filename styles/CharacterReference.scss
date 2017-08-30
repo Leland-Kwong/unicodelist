@@ -150,7 +150,9 @@ $matchTopPadding: .5rem;
   }
 
   .Match__MetadataKey {
-    width: 5.5em;
+    font-size: .8rem;
+    width: 6em;
+    color: inherit;
   }
 }
 
@@ -197,12 +199,11 @@ $matchTopPadding: .5rem;
 }
 
 .Match__MetadataKey {
-  font-size: 11px;
-  width: 3em;
-  margin-right: .3em;
+  font-size: 10px;
+  width: calc(3.7em);
   display: inline-block;
   text-transform: uppercase;
-  letter-spacing: .03rem;
+  letter-spacing: .1em;
   flex-shrink: 0;
   color: #949494;
 }
@@ -475,5 +476,13 @@ $matchTopPadding: .5rem;
     & > :last-child {
       text-align: center;
     }
+  }
+}
+
+.CharSearch {
+  color: #fff;
+
+  .Input {
+    background: #000;
   }
 }

@@ -556,7 +556,7 @@ export class CharacterReference extends Component {
                 <Input
                   type='search'
                   autoFocus={true}
-                  className='char-input'
+                  containerClassName='CharSearch'
                   onChange={ev => {
                     this.handleInput({ value: ev.target.value, page: 0 });
                     updateRouteDebounced(ev.target.value, this.getUrlQuery().filterBy, 0);
