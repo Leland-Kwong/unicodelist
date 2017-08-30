@@ -169,7 +169,12 @@ class CharHelp extends Component {
     show: false
   }
 
-  examples = ['arrow', 'nbsp', '©', '00b6']
+  examples = [
+    { type: 'description', query: 'arrow north' },
+    { type: 'html entity', query: 'nbsp' },
+    { type: 'character', query: '©' },
+    { type: 'hexadecimal', query: '00b6' },
+  ]
 
   isComponentElem = (event) => {
     let node = event.target;
@@ -199,16 +204,21 @@ class CharHelp extends Component {
     }
 
     return (
-      <div className='CharSearch__HelpExamplesContainer absolute'>
-        {this.examples.map((value) => {
-          return (
-            <a key={value} className='CharSearch__HelpExample db white' onClick={() => {
-              updateRoute(value);
-              this.hideExamples();
-            }}
-            >{value}</a>
-          );
-        })}
+      <div className='CharSearch__HelpExamplesContainer absolute white'>
+        <p className='pa3'>You may search by character, description, html entity, hexadecimal, and decimal. Try one of these sample searches:</p>
+        <div>
+          {this.examples.map(({ type, query }) => {
+            return (
+              <a key={query} className='CharSearch__HelpExample white db' onClick={() => {
+                updateRoute(query);
+                this.hideExamples();
+              }}
+              >
+                {type}: <strong>{query}</strong>
+              </a>
+            );
+          })}
+        </div>
       </div>
     );
   }
@@ -219,10 +229,10 @@ class CharHelp extends Component {
         className='CharSearch__Help f7'
         ref={el => this.elem = el}
       >
-        <span
+        <a
           className='CharSearch__HelpToggle white relative'
           onClick={this.toggleExamples}
-        >examples</span>
+        >examples ▾</a>
         {this.Examples()}
       </div>
     );
@@ -519,27 +529,25 @@ export class CharacterReference extends Component {
     return (
       <main>
         <div className='container-full-width'>
-          <div>
-            <h2>
-              <Filters
-                options={['all', 'recently used'].map(name =>
-                  ({ label: name, value: name }))
-                }
-                value={filterBy}
-                onClick={(filterBy) => {
-                  updateRoute('', filterBy);
-                }}
-              />
-            </h2>
-            {filterBy === 'all'
-              &&
-              <ExampleSearches
-                onClick={(query) => {
-                  const { filterBy } = this.getUrlQuery();
-                  updateRoute(query, filterBy);
-                }}
-              />}
-          </div>
+          <h2>
+            <Filters
+              options={['all', 'recently used'].map(name =>
+                ({ label: name, value: name }))
+              }
+              value={filterBy}
+              onClick={(filterBy) => {
+                updateRoute('', filterBy);
+              }}
+            />
+          </h2>
+          {filterBy === 'all'
+            &&
+            <ExampleSearches
+              onClick={(query) => {
+                const { filterBy } = this.getUrlQuery();
+                updateRoute(query, filterBy);
+              }}
+            />}
         </div>
         <div className='MatchesMain'>
           <div className='Match__Measuring'>

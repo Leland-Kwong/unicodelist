@@ -150,18 +150,19 @@ export class EntityMatch extends Component {
     // customized ordering of keys from `entities` object
     const entityPropsToShow = getEntityPropsToShow(view);
     const Description = (
-      <h5 className='Match__Header Match__Desc'>
+      <h3 className='Match__Header Match__Desc'>
         {isListView &&
           <Link
             className='black'
             query={{ query: metadata.hex }}
           >{desc}</Link>}
         {isDetailView && desc}
-      </h5>
+      </h3>
     );
     return (
       <div className={classnames({
         'Match': isListView,
+        'Match--list': isListView,
         'Match--detail container-full-width': isDetailView
       })}
       >

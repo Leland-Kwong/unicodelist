@@ -11,7 +11,7 @@ input,
   @include inputShared();
   border: 0;
   width: 100%;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  // border: 2px solid rgba(0, 0, 0, 0.15);
   border-radius: 0;
   background: #fbfbfb;
   box-shadow: inset 0 0 2px rgba(0,0,0,0.1);
@@ -32,7 +32,6 @@ input,
   }
 
   &:focus {
-    border-color: $colorPrimary;
     outline: 0;
     background: #fff;
   }
