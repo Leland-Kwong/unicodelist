@@ -162,6 +162,73 @@ const loadingStates = [
   'fetching entities',
   'settings things up',
 ];
+
+class CharHelp extends Component {
+
+  state = {
+    show: false
+  }
+
+  examples = ['arrow', 'nbsp', '©', '00b6']
+
+  isComponentElem = (event) => {
+    let node = event.target;
+    while(node.parentNode && (node !== this.elem)) {
+      node = node.parentNode;
+    }
+    return node === this.elem;
+  }
+
+  componentDidMount() {
+    window.addEventListener('click', (ev) => {
+      if (!this.isComponentElem(ev)) this.hideExamples();
+    });
+  }
+
+  hideExamples = () => {
+    this.setState({ show: false });
+  }
+
+  toggleExamples = () => {
+    this.setState(({ show }) => ({ show: !show }));
+  }
+
+  Examples = () => {
+    if (!this.state.show) {
+      return null;
+    }
+
+    return (
+      <div className='CharSearch__HelpExamplesContainer absolute'>
+        {this.examples.map((value) => {
+          return (
+            <a key={value} className='CharSearch__HelpExample db white' onClick={() => {
+              updateRoute(value);
+              this.hideExamples();
+            }}
+            >{value}</a>
+          );
+        })}
+      </div>
+    );
+  }
+
+  render () {
+    return (
+      <div
+        className='CharSearch__Help f7'
+        ref={el => this.elem = el}
+      >
+        <span
+          className='CharSearch__HelpToggle white relative'
+          onClick={this.toggleExamples}
+        >examples</span>
+        {this.Examples()}
+      </div>
+    );
+  }
+}
+
 export class CharacterReference extends Component {
 
   static propTypes = {
@@ -453,7 +520,7 @@ export class CharacterReference extends Component {
       <main>
         <div className='container-full-width'>
           <div>
-            <h2 className='overflow-auto nowrap'>
+            <h2>
               <Filters
                 options={['all', 'recently used'].map(name =>
                   ({ label: name, value: name }))
@@ -475,6 +542,12 @@ export class CharacterReference extends Component {
           </div>
         </div>
         <div className='MatchesMain'>
+          <div className='Match__Measuring'>
+            <style className='Match__Style' ref={ref => this.matchStyle = ref} />
+            <div className='Matches' ref={ref => this.measure = ref}>
+              {MatchesMeasure}
+            </div>
+          </div>
           {this.isDataReady() && !matches.length
             && <EmptyState query={inputValue} />}
           <div className='Matches'>
@@ -521,12 +594,6 @@ export class CharacterReference extends Component {
 
     return (
       <Main>
-        <div className='Match__Measuring'>
-          <style className='Match__Style' ref={ref => this.matchStyle = ref} />
-          <div className='Matches' ref={ref => this.measure = ref}>
-            {MatchesMeasure}
-          </div>
-        </div>
         <header className='AppHeader block'>
           <div className='AppHeader__Info container-full-width'>
             <div className='grid'>
@@ -537,6 +604,7 @@ export class CharacterReference extends Component {
                   onClick={(ev) => {
                     ev.preventDefault();
                     updateRoute();
+                    scrollToTop();
                   }}
                 ><Icon name='logo' className='mr1' /><span>{pageTitle}</span></a>
               </h1>
@@ -548,23 +616,28 @@ export class CharacterReference extends Component {
             </div>
           </div>
           <section
-            className='AppHeader__Controls'
+            className='AppHeader__Controls container-full-width'
             style={{ display: 'flex', 'flexDirection': 'column', 'alignItems': 'stretch', flexGrow: 1, justifyContent: 'center' }}
           >
             <div className='grid'>
-              <div style={{ flexGrow: 1 }}>
+              <div style={{ flexGrow: 1, position: 'relative' }}>
                 <Input
                   type='search'
                   autoFocus={true}
                   containerClassName='CharSearch'
                   onChange={ev => {
-                    this.handleInput({ value: ev.target.value, page: 0 });
+                    this.handleInput({
+                      value: ev.target.value,
+                      page: 0,
+                      onUpdateComplete: scrollToTop
+                    });
                     updateRouteDebounced(ev.target.value, this.getUrlQuery().filterBy, 0);
                   }}
                   value={inputValue}
-                  placeholder={`arrow, nbsp, ©, 02713 ...`}
+                  placeholder={`search entities`}
                   inputRef={input => this.input = input}
                 />
+                <CharHelp />
               </div>
             </div>
           </section>

@@ -5,8 +5,8 @@ const defaultRefFn = () => {};
 export class Input extends Component {
   render() {
     const {
-      className,
-      containerClassName,
+      className = '',
+      containerClassName = '',
       label,
       inputRef = defaultRefFn,
       type,

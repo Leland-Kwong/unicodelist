@@ -145,8 +145,8 @@ main {
 }
 
 .container-full-width {
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: $mainContainerPadding;
+  padding-right: $mainContainerPadding;
 }
 
 .MainContent {
