@@ -252,6 +252,7 @@ export class CharacterReference extends Component {
     const { query } = this.props;
     this.state = {
       inputValue: query.query,
+      filterBy: query.filterBy,
       matches: [],
       matchesPage: query.page,
       totalMatches: 0,
