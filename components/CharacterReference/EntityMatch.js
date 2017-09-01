@@ -90,26 +90,26 @@ export class EntityMatch extends Component {
   }
 
   getDelay() {
-    const batchSize = 5;
-    return Math.floor(this.props.index / batchSize) * 25;
+    const batchSize = 4;
+    const delay = 20;
+    return Math.floor(this.props.index / batchSize) * delay;
   }
 
   componentDidMount() {
-    this.renderPending = setTimeout(
-      this.renderDelay,
-      this.getDelay(),
-      this
-    );
+    this.renderDelay();
   }
 
   componentWillUnmount() {
     clearTimeout(this.renderPending);
   }
 
-  renderDelay(_this) {
-    _this.setState({
-      isReady: true
-    });
+  renderDelay() {
+    this.renderPending = setTimeout(
+      () => {
+        this.setState({ isReady: true });
+      },
+      this.getDelay(),
+    );
   }
 
   addToCopyCount(hex) {
@@ -162,7 +162,6 @@ export class EntityMatch extends Component {
     return (
       <div className={classnames({
         'Match': isListView,
-        'Match--list': isListView,
         'Match--detail container-full-width': isDetailView
       })}
       >

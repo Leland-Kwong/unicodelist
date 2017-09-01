@@ -191,6 +191,7 @@ class CharHelp extends Component {
   }
 
   hideExamples = () => {
+    if (!this.state.show) return;
     this.setState({ show: false });
   }
 
@@ -359,12 +360,6 @@ export class CharacterReference extends Component {
   }
 
   findMatches = (query, page = 0) => {
-    const isDev = process.env.NODE_ENV === 'development';
-    let startTime = 0;
-    if (isDev) {
-      startTime = performance.now();
-    }
-
     // only trim if more than one character otherwise tab characters and &nbsp; will get trimmed
     const normalizedQuery = query.length > 1 ? query.trim() : query;
     const result = this.search(normalizedQuery);
@@ -376,10 +371,6 @@ export class CharacterReference extends Component {
     const start = page * batchSize;
     const end = (normalizedPage + 1) * batchSize;
     const nbPages = Math.ceil(filteredMatches.length / batchSize);
-
-    if (isDev) {
-      console.log({ took: performance.now() - startTime });
-    }
 
     return {
       matches: filteredMatches.slice(start, end),
@@ -645,7 +636,7 @@ export class CharacterReference extends Component {
                   placeholder={`search entities`}
                   inputRef={input => this.input = input}
                 />
-                <CharHelp />
+                {!inputValue.length && <CharHelp />}
               </div>
             </div>
           </section>
