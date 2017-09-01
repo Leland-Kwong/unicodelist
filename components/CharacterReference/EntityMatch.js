@@ -4,8 +4,18 @@ import { Copyable } from './Copyable';
 import Router from 'next/router';
 import { views, setBookmarks, entityID } from './modules';
 import classnames from 'classnames';
+import memoize from 'memoizee';
 
 const basePath = '/';
+
+const nbsp = 0x000A0;
+
+// customized ordering of keys from `entities` object
+const getEntityPropsToShow = memoize((view) => (
+  view === views.list
+    ? [/* 'character' */, 'named', 'css', 'hex']
+    : ['named', 'css', 'hex', 'dec', 'unicode']
+));
 
 const createHref = (value) => {
   const encodedValue = encodeURIComponent(value);
@@ -60,27 +70,55 @@ span:before {
   };
   return (key, value) => (fns[key] || fns.default)(value);
 })();
+
 export class EntityMatch extends Component {
   static propTypes = {
     view: PropTypes.oneOf(Object.keys(views))
   }
 
   static defaultProps = {
-    onCopy: Function()
+    onCopy: Function
   }
 
   constructor(props) {
     super(props);
     this.entityID = entityID(this.props.metadata);
+    const showImmediately = !process.browser || this.getDelay() === 0;
+    this.state = {
+      isReady: showImmediately,
+    };
   }
 
-  addToCopyCount = () => {
-    setBookmarks(this.props.metadata.hex);
+  getDelay() {
+    const batchSize = 4;
+    const delay = 20;
+    return Math.floor(this.props.index / batchSize) * delay;
+  }
+
+  componentDidMount() {
+    this.renderDelay();
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.renderPending);
+  }
+
+  renderDelay() {
+    this.renderPending = setTimeout(
+      () => {
+        this.setState({ isReady: true });
+      },
+      this.getDelay(),
+    );
+  }
+
+  addToCopyCount(hex) {
+    setBookmarks(hex);
   }
 
   handleCopy = () => {
-    this.addToCopyCount();
-    this.props.onCopy(entityID);
+    this.addToCopyCount(this.props.metadata.hex);
+    this.props.onCopy();
     window.ga('send', {
       hitType: 'event',
       eventCategory: 'characterEntityReference',
@@ -90,16 +128,19 @@ export class EntityMatch extends Component {
   }
 
   render() {
+    if (!this.state.isReady) {
+      return null;
+    }
+
     const { metadata, view } = this.props;
     const { desc, ...fields } = metadata;
-    const nbsp = 0x000A0;
     const char = fields.character;
     const charDisplay = char.trim().length ? char : String.fromCharCode(nbsp);
     const uid = fields.hex;
     const isListView = view === views.list;
     const isDetailView = view === views.detail;
     const Category = view === views.detail && (
-      <div className='color-sub-text mt3 mb4' style={{ fontSize: '.85rem' }}>
+      <div className='color-sub-text mt3 mb4 f6'>
         <div>Category: <em>{fields.category}</em></div>
         <div>learn more about&nbsp;
           <a href='http://www.unicode.org/versions/Unicode10.0.0/ch04.pdf#G134153'>unicode categories</a>
@@ -107,18 +148,16 @@ export class EntityMatch extends Component {
       </div>
     );
     // customized ordering of keys from `entities` object
-    const entityPropsToShow = view === views.list
-      ? [/* 'character' */, 'named', 'css', 'hex']
-      : ['named', 'css', 'hex', 'dec', 'unicode'];
+    const entityPropsToShow = getEntityPropsToShow(view);
     const Description = (
-      <h5 className='Match__Header Match__Desc'>
+      <h3 className='Match__Header Match__Desc'>
         {isListView &&
           <Link
-            className='db black'
+            className='black'
             query={{ query: metadata.hex }}
           >{desc}</Link>}
         {isDetailView && desc}
-      </h5>
+      </h3>
     );
     return (
       <div className={classnames({
@@ -144,12 +183,12 @@ export class EntityMatch extends Component {
             return (
               <div className='Match__MetadataField' key={key}>
                 <span className='Match__MetadataKey'>{keyDisplay}</span>
-                <div className='Match__MetadataValue'>
+                <div className='Match__MetadataCol2'>
                   <Copyable
                     textToCopy={valueToCopy}
                     uid={uid}
                     onCopy={this.handleCopy}
-                  >{valueToDisplay}</Copyable>
+                  ><span className='Match__MetadataValue'>{valueToDisplay}</span></Copyable>
                   {isDetailView && codeExample(key, value)}
                 </div>
               </div>
@@ -157,11 +196,6 @@ export class EntityMatch extends Component {
           })}
         </div>
         {Category}
-        {/* {view === views.list &&
-          <Link
-            query={{ query: metadata.hex }}
-            className='f7 mt2 db tr black'
-          >more →</Link>} */}
       </div>
     );
   }

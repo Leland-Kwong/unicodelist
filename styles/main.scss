@@ -58,7 +58,7 @@ body {
   color: $baseFontColor;
   $darkBgColor: darken($baseBackgroundColor, 4%);
   background: $baseBackgroundColor;
-  line-height: 1.6;
+  line-height: 1.5;
   margin: 0;
   padding: 0;
   background-repeat: no-repeat;
@@ -145,8 +145,8 @@ main {
 }
 
 .container-full-width {
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: $mainContainerPadding;
+  padding-right: $mainContainerPadding;
 }
 
 .MainContent {
@@ -158,46 +158,6 @@ main {
   padding-bottom: $vPadding;
 }
 
-.PageTitle {
-  @extend .bodyFont;
-  // @include normal();
-  font-size: .9rem;
-  color: #555;
-  text-transform: uppercase;
-  margin-top: 0;
-  padding-top: 0;
-  // margin-bottom: -.5rem;
-}
-
-.block-image-container {
-  overflow: hidden;
-  display: block;
-
-  img {
-    margin: 0 auto;
-    display: block;
-    max-width: 100%;
-  }
-}
-
 img {
   border: 1px solid #000;
-}
-
-[class*=Permalink] {
-  display: inline-block;
-  transform: translate(-.8rem, -.3em);
-  width: 0;
-  font-size: 1rem;
-  color: #ccc;
-  font-family: sans-serif;
-  font-weight: normal;
-
-  &:hover {
-    color: #777;
-  }
-
-  &:before {
-    content: "#";
-  }
 }

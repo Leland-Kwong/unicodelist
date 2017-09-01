@@ -53,6 +53,8 @@ const normalizedCharRefW3 = charRefW3.map(ent => {
   return columnDefs.reduce((cols, colName, i) => {
     if (colName === 'category') {
       cols[i] = getCategory(ent.character);
+    } else if (colName === 'hex') {
+      cols[i] = '&#x' + Number(ent.dec.slice(2, -1)).toString(16).padStart(4, 0).toUpperCase() + ';';
     } else {
       cols[i] = ent[colName];
     }
@@ -64,7 +66,10 @@ const dataset = {
   columnDefs,
   mappings: normalizedCharRefW3
     .concat(
-      unicodeOrgList.filter(entity => entity[5].match(/Sc|Sm/))
+      unicodeOrgList
+        .filter(entity => {
+          return /Sc|Sm/.test(entity[5]);
+        })
     ).map(ent => {
       // change `named` column to show only the first value
       ent[3] = ent[3].split(' ')[0];

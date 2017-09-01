@@ -8,7 +8,7 @@ import { Toaster } from '../allComponents';
 export class Copyable extends Component {
   static propTypes = {
     uid: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    children: PropTypes.string.isRequired,
+    children: PropTypes.node.isRequired,
     className: PropTypes.string,
   }
 
@@ -57,7 +57,7 @@ export class Copyable extends Component {
         {children}
         {justCopied &&
           <Toaster>
-            <div className={classnames('Copyable__Tooltip')}>
+            <div className={'Copyable__Tooltip'}>
               <strong className='Copyable__TooltipTextToCopy'>{textToCopy}</strong>
               <div className='Copyable__TooltipTitle'>copied to clipboard</div>
             </div>

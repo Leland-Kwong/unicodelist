@@ -15,13 +15,16 @@ import PropTypes from 'prop-types';
 import search from './search';
 import memoize from 'memoizee';
 import { views, getBookmarks } from './modules';
+import { migrateCopyHistory } from './migrate-copy-history';
 import { name as pageTitle } from '../../site.config';
+
+const noop = () => {};
+const basePath = '/';
+const batchSize = 80;
 
 const scrollToTop = () => {
   document.body.scrollTop = 0;
 };
-
-const basePath = '/';
 
 const updateRoute = function(value = '', filterBy = 'all', page = 0) {
   const query = encodeURIComponent(value);
@@ -64,7 +67,7 @@ const filterFns = {
   }
 };
 
-function inputHandler(query, page) {
+function inputHandler(query, page, onComplete = noop) {
   const {
     matches,
     totalMatches,
@@ -75,7 +78,7 @@ function inputHandler(query, page) {
     matches,
     totalMatches,
     nbPages
-  });
+  }, onComplete);
 }
 const debouncedInputHandler = debounce(inputHandler, 100);
 
@@ -159,11 +162,89 @@ const loadingStates = [
   'fetching entities',
   'settings things up',
 ];
+
+class CharHelp extends Component {
+
+  state = {
+    show: false
+  }
+
+  examples = [
+    { type: 'description', query: 'arrow north' },
+    { type: 'html entity', query: 'nbsp' },
+    { type: 'character', query: '©' },
+    { type: 'hexadecimal', query: '00b6' },
+  ]
+
+  isComponentElem = (event) => {
+    let node = event.target;
+    while(node.parentNode && (node !== this.elem)) {
+      node = node.parentNode;
+    }
+    return node === this.elem;
+  }
+
+  componentDidMount() {
+    window.addEventListener('click', (ev) => {
+      if (!this.isComponentElem(ev)) this.hideExamples();
+    });
+  }
+
+  hideExamples = () => {
+    if (!this.state.show) return;
+    this.setState({ show: false });
+  }
+
+  toggleExamples = () => {
+    this.setState(({ show }) => ({ show: !show }));
+  }
+
+  Examples = () => {
+    if (!this.state.show) {
+      return null;
+    }
+
+    return (
+      <div className='CharSearch__HelpExamplesContainer absolute white'>
+        <p className='pa3'>You may search by character, description, html entity, hexadecimal, and decimal. Try one of these sample searches:</p>
+        <div>
+          {this.examples.map(({ type, query }) => {
+            return (
+              <a key={query} className='CharSearch__HelpExample white db' onClick={() => {
+                updateRoute(query);
+                this.hideExamples();
+              }}
+              >
+                {type}: <strong>{query}</strong>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  render () {
+    return (
+      <div
+        className='CharSearch__Help f7'
+        ref={el => this.elem = el}
+      >
+        <a
+          className='CharSearch__HelpToggle white relative'
+          onClick={this.toggleExamples}
+        >examples ▾</a>
+        {this.Examples()}
+      </div>
+    );
+  }
+}
+
 export class CharacterReference extends Component {
 
   static propTypes = {
     basePath: PropTypes.string.isRequired,
-    query: PropTypes.object.isRequired
+    query: PropTypes.object.isRequired,
   }
 
   constructor(props) {
@@ -171,6 +252,7 @@ export class CharacterReference extends Component {
     const { query } = this.props;
     this.state = {
       inputValue: query.query,
+      filterBy: query.filterBy,
       matches: [],
       matchesPage: query.page,
       totalMatches: 0,
@@ -210,15 +292,18 @@ export class CharacterReference extends Component {
         debounce: false,
         filterBy: nextProps.url.query.filterBy,
         page: nextProps.url.query.page,
+        onUpdateComplete: () => {
+          scrollToTop();
+        }
       });
     }
   }
 
   componentDidUpdate() {
     if (this.props.url.query.view === views.list) {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflowY = 'scroll';
     } else {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflowY = 'hidden';
     }
   }
 
@@ -253,8 +338,8 @@ export class CharacterReference extends Component {
       });
     });
     const charRefData = (await preparedData);
-
     this.search = search(charRefData);
+    migrateCopyHistory();
     this.setState({
       charRefData,
     }, () => {
@@ -276,8 +361,6 @@ export class CharacterReference extends Component {
   }
 
   findMatches = (query, page = 0) => {
-    const startTime = performance.now();
-
     // only trim if more than one character otherwise tab characters and &nbsp; will get trimmed
     const normalizedQuery = query.length > 1 ? query.trim() : query;
     const result = this.search(normalizedQuery);
@@ -286,12 +369,9 @@ export class CharacterReference extends Component {
     const matches = result;
     const { filterBy } = this.getUrlQuery();
     const filteredMatches = filterFns[filterBy](matches);
-    const batchSize = 80;
     const start = page * batchSize;
     const end = (normalizedPage + 1) * batchSize;
     const nbPages = Math.ceil(filteredMatches.length / batchSize);
-
-    console.log({ took: performance.now() - startTime });
 
     return {
       matches: filteredMatches.slice(start, end),
@@ -321,7 +401,8 @@ export class CharacterReference extends Component {
     // default to first page unless specified
     page = this.getUrlQuery().page,
     force = false,
-    filterBy = this.getUrlQuery().filterBy
+    filterBy = this.getUrlQuery().filterBy,
+    onUpdateComplete = noop
   }) => {
     const hasChanged = value !== this.state.inputValue ||
       filterBy !== this.getUrlQuery().filterBy ||
@@ -334,9 +415,11 @@ export class CharacterReference extends Component {
       matchesPage: Number(page),
       filterBy
     }, () => {
-      ((debounce && value.length) ? debouncedInputHandler : inputHandler).call(this, value, page);
+      ((debounce && value.length) ? debouncedInputHandler : inputHandler).call(this, value, page, () => {
+        this.updateMatchStyle();
+        onUpdateComplete();
+      });
     });
-    this.updateMatchStyle();
   }
 
   // forces a list refresh
@@ -350,19 +433,31 @@ export class CharacterReference extends Component {
     });
   }
 
+  calcColumns = (calcWith) => {
+    let numCols = Math.round(this.measure.clientWidth / calcWith);
+    /*
+      we want all rows to have an equal number of items
+      so that to make it easier to tell if its the last row or not
+     */
+    while (batchSize % numCols) {
+      numCols--;
+    }
+    return numCols;
+  }
+
   updateMatchStyle = () => {
     const child = this.measure.children[0];
     const matchWidth = Math.floor(child.getBoundingClientRect().width);
     const { marginLeft } = window.getComputedStyle(child);
     const calcWith = matchWidth + parseInt(marginLeft);
-    const numCols = Math.round(this.measure.clientWidth / calcWith);
+    const numCols = this.calcColumns(calcWith);
     if (this.numCols === numCols) {
       return;
     }
     this.numCols = numCols;
     this.matchStyle.textContent = `
 .Match {
-  flex: 0 0 calc((100% / ${numCols}) - ${marginLeft} - calc(${marginLeft} / ${numCols}));
+  flex: 0 0 calc(${100 / numCols}% - ${marginLeft} - ${parseInt(marginLeft) / numCols}px);
 }
     `;
   }
@@ -372,7 +467,6 @@ export class CharacterReference extends Component {
       inputValue,
       matches,
       totalMatches,
-      charRefData,
       filterBy,
       nbPages,
       matchesPage
@@ -380,11 +474,13 @@ export class CharacterReference extends Component {
 
     const PrevNext = ({ visible = true, page, ...rest }) => {
       const href = `/list/${filterBy}?query=${encodeURIComponent(inputValue)}&page=${page}`;
+      if (!visible) {
+        return null;
+      }
       return (
         <a
           href={href}
-          className='dib'
-          style={{ visibility: visible ? 'visible' : 'hidden' }}
+          className='dib Btn'
           onClick={(ev) => {
             ev.preventDefault();
             updateRoute(
@@ -392,7 +488,6 @@ export class CharacterReference extends Component {
               filterBy,
               page
             );
-            scrollToTop();
           }}
           {...rest}
         />
@@ -402,62 +497,66 @@ export class CharacterReference extends Component {
     const lastPage = nbPages - 1;
     const PageInfo = (
       <div
-        className='f6 tc dib'
-        style={{ margin: '0 1rem' }}
-      >{matchesPage + 1} / {nbPages}</div>
+        className='f6 pa3'
+      >Page {matchesPage + 1} of {nbPages}</div>
     );
-    const Pagination = (
-      <div className='Pagination tc mb4'>
-        <PrevNext visible={matchesPage > 0} page={matchesPage - 1}>
-          ‹ Prev
-        </PrevNext>
+    const Pagination = (nbPages > 1) && (
+      <div className='Pagination tc mb4 items-center justify-between'>
         {PageInfo}
-        <PrevNext visible={matchesPage < lastPage} page={matchesPage + 1}>
-          Next <strong>›</strong>
-        </PrevNext>
+        <div>
+          <PrevNext visible={matchesPage > 0} page={matchesPage - 1}>
+            ‹ Previous Page
+          </PrevNext>
+          &nbsp;
+          <PrevNext visible={matchesPage < lastPage} page={matchesPage + 1}>
+            Next Page <strong>›</strong>
+          </PrevNext>
+        </div>
+        <div className='color-sub-text f6 pa3'>
+          <strong>{totalMatches}</strong> entities total
+        </div>
       </div>
     );
 
     return (
       <main>
         <div className='container-full-width'>
-          <div>
-            <h2 className='overflow-auto nowrap'>
-              <Filters
-                options={['all', 'recently used'].map(name =>
-                  ({ label: name, value: name }))
-                }
-                value={filterBy}
-                onClick={(filterBy) => {
-                  updateRoute('', filterBy);
-                }}
-              />
-            </h2>
-            {filterBy === 'all'
-              &&
-              <ExampleSearches
-                onClick={(query) => {
-                  const { filterBy } = this.getUrlQuery();
-                  updateRoute(query, filterBy);
-                }}
-              />}
-          </div>
+          <h2>
+            <Filters
+              options={['all', 'recently used'].map(name =>
+                ({ label: name, value: name }))
+              }
+              value={filterBy}
+              onClick={(filterBy) => {
+                updateRoute('', filterBy);
+              }}
+            />
+          </h2>
+          {filterBy === 'all'
+            &&
+            <ExampleSearches
+              onClick={(query) => {
+                const { filterBy } = this.getUrlQuery();
+                updateRoute(query, filterBy);
+              }}
+            />}
         </div>
-        <div className='container-full-width'>
-          <div className='color-sub-text' style={{ width: '13rem', marginRight: '' }}>
-            <div style={{ fontSize: 11 }}>viewing <strong>{totalMatches}</strong> of {charRefData.length} entities</div>
+        <div className='MatchesMain'>
+          <div className='Match__Measuring'>
+            <style className='Match__Style' ref={ref => this.matchStyle = ref} />
+            <div className='Matches' ref={ref => this.measure = ref}>
+              {MatchesMeasure}
+            </div>
           </div>
-        </div>
-        <div className='MatchesMain' ref={$ => this.$MatchesMain = $}>
           {this.isDataReady() && !matches.length
             && <EmptyState query={inputValue} />}
           <div className='Matches'>
-            {matches.map(match => (
+            {matches.map((match, index) => (
               <EntityMatch
                 key={match.hex}
+                index={index}
                 view='list'
                 metadata={match}
-                onCopy={this.refreshList}
               />
             ))}
           </div>
@@ -495,12 +594,6 @@ export class CharacterReference extends Component {
 
     return (
       <Main>
-        <div className='Match__Measuring'>
-          <style className='Match__Style' ref={ref => this.matchStyle = ref} />
-          <div className='Matches' ref={ref => this.measure = ref}>
-            {MatchesMeasure}
-          </div>
-        </div>
         <header className='AppHeader block'>
           <div className='AppHeader__Info container-full-width'>
             <div className='grid'>
@@ -510,8 +603,8 @@ export class CharacterReference extends Component {
                   className='mid-gray b flex items-center'
                   onClick={(ev) => {
                     ev.preventDefault();
-                    scrollToTop();
                     updateRoute();
+                    scrollToTop();
                   }}
                 ><Icon name='logo' className='mr1' /><span>{pageTitle}</span></a>
               </h1>
@@ -523,24 +616,28 @@ export class CharacterReference extends Component {
             </div>
           </div>
           <section
-            className='AppHeader__Controls'
+            className='AppHeader__Controls container-full-width'
             style={{ display: 'flex', 'flexDirection': 'column', 'alignItems': 'stretch', flexGrow: 1, justifyContent: 'center' }}
           >
             <div className='grid'>
-              <div style={{ flexGrow: 1 }}>
+              <div style={{ flexGrow: 1, position: 'relative' }}>
                 <Input
                   type='search'
                   autoFocus={true}
-                  className='char-input'
+                  containerClassName='CharSearch'
                   onChange={ev => {
-                    scrollToTop();
-                    this.handleInput({ value: ev.target.value, page: 0 });
+                    this.handleInput({
+                      value: ev.target.value,
+                      page: 0,
+                      onUpdateComplete: scrollToTop
+                    });
                     updateRouteDebounced(ev.target.value, this.getUrlQuery().filterBy, 0);
                   }}
                   value={inputValue}
-                  placeholder={`arrow, nbsp, ©, 02713 ...`}
+                  placeholder={`search entities`}
                   inputRef={input => this.input = input}
                 />
+                {!inputValue.length && <CharHelp />}
               </div>
             </div>
           </section>
