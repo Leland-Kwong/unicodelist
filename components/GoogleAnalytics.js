@@ -1,8 +1,25 @@
 import React, { Component } from 'react';
 import siteConfig from '../site.config';
 
+const GA_TRACKING_ID = 'UA-47489067-2';
 const googleAnalyticsScript = /* @html */`
+  <!-- Global Site Tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}"></script>
   <script>
+    var isProduction = window.location.hostname === '${siteConfig.domain}';
+    if (isProduction) {
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', '${GA_TRACKING_ID}');
+    } else {
+      window.ga = function gaDev() {
+        console.log([...arguments]);
+      };
+    }
+  </script>
+  <!-- <script>
     var isProduction = window.location.hostname === '${siteConfig.domain}';
     if (isProduction) {
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -17,7 +34,7 @@ const googleAnalyticsScript = /* @html */`
         console.log([...arguments]);
       };
     }
-  </script>
+  </script> -->
 `;
 
 export class GoogleAnalytics extends Component {
